@@ -21,7 +21,7 @@ fun main() {
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
     applicationServer.start()
 
-    val database = Database(env)
+    val database = Database(env, applicationState)
 
     applicationState.ready = true
 }

@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import com.zaxxer.hikari.pool.HikariPool
 import no.nav.syfo.Environment
+import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.log
 import org.flywaydb.core.Flyway
 import java.net.ConnectException
@@ -11,7 +12,7 @@ import java.net.SocketException
 import java.sql.Connection
 import java.sql.ResultSet
 
-class Database(private val env: Environment, retries: Long = 30, sleepTime: Long = 5_000) :
+class Database(private val env: Environment, applicationState: ApplicationState, retries: Long = 30, sleepTime: Long = 5_000) :
     DatabaseInterface {
     private val dataSource: HikariDataSource
     override val connection: Connection
@@ -50,6 +51,8 @@ class Database(private val env: Environment, retries: Long = 30, sleepTime: Long
         }
         if (tempDatasource == null) {
             log.error("Could not connect to DB")
+            applicationState.ready = false
+            applicationState.alive = false
             throw RuntimeException("Could not connect to DB")
         }
         dataSource = tempDatasource
