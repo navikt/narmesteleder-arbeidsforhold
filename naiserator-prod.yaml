@@ -7,13 +7,14 @@ metadata:
     team: teamsykmelding
 spec:
   image: {{ image }}
-  sqlInstances:
-    - name: narmesteleder-arbeidsforhold-db-instance
-      type: POSTGRES_12
-      diskSize: 10
-      databases:
-        - name: narmesteleder-arbeidsforhold
-          envVarPrefix: NAIS_DATABASE
+  gcp:
+    sqlInstances:
+      - name: narmesteleder-arbeidsforhold-db-instance
+        type: POSTGRES_12
+        diskSize: 10
+        databases:
+          - name: narmesteleder-arbeidsforhold
+            envVarPrefix: NAIS_DATABASE
   replicas:
     min: 2
     max: 6
