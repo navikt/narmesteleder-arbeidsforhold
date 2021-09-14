@@ -37,7 +37,6 @@ fun createApplicationEngine(
                 configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
         }
-
         install(CallId) {
             generate { UUID.randomUUID().toString() }
             verify { callId: String -> callId.isNotEmpty() }
