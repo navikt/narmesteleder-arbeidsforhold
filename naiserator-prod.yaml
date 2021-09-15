@@ -46,3 +46,6 @@ spec:
   webproxy: true
   kafka:
     pool: nav-prod
+  env:
+    - name: KAFKA_CLIENT_ID
+      value: narmesteleder-arbeidsforhold
