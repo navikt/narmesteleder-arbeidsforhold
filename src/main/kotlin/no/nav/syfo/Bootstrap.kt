@@ -41,17 +41,15 @@ fun main() {
         JacksonKafkaDeserializer(NarmestelederKafkaMessage::class)
     )
 
-
     val database = Database(env, applicationState)
 
-    val narmestelederService = NarmestelederService(kafkaConsumer, NarmestelederDb(database), applicationState)
+    val narmestelederService = NarmestelederService(kafkaConsumer, NarmestelederDb(database), applicationState, env.narmestelederLeesahTopic)
 
     applicationState.ready = true
 
     startBackgroundJob(applicationState) {
         narmestelederService.start()
     }
-
 }
 
 fun startBackgroundJob(applicationState: ApplicationState, block: suspend CoroutineScope.() -> Unit) {
