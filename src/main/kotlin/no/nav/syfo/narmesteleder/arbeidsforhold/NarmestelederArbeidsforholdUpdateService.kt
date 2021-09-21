@@ -2,6 +2,8 @@ package no.nav.syfo.narmesteleder.arbeidsforhold
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import no.nav.syfo.application.ApplicationState
@@ -31,19 +33,26 @@ class NarmestelederArbeidsforholdUpdateService(
         val logJob = GlobalScope.launch(Dispatchers.Unbounded) {
             while (true) {
                 delay(10_000)
-                log.info("checked ${gyldig + ugyldig} narmesteledere")
+                log.info("checked fortsatt gyldig: $gyldig ugyldig: $ugyldig")
             }
         }
         val narmesteleder = narmestelederDb.getNarmesteledereToUpdate()
+        var checkedNarmesteleder: List<CheckedNarmesteleder>? = null
         val timeUsed = (
             measureTimeMillis {
-                narmesteleder.forEach {
-                    if (checkNl(it)) {
-                        gyldig += 1
-                    } else {
-                        ugyldig += 1
+                val jobs = narmesteleder.map {
+                    GlobalScope.async(context = Dispatchers.Fixed) {
+                        val valid = checkNl(it)
+                        if (valid) {
+                            gyldig += 1
+                        } else {
+                            log.info("Should be disabled ${it.narmestelederId}")
+                            ugyldig += 1
+                        }
+                        CheckedNarmesteleder(it, valid)
                     }
                 }
+                checkedNarmesteleder = jobs.awaitAll().map { it }
             } / 1000.0
             )
 

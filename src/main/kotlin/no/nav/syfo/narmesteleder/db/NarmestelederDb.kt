@@ -19,7 +19,10 @@ class NarmestelederDb(private val database: DatabaseInterface) {
                 preparedStatement.setString(1, narmesteleder.narmesteLederId.toString())
                 preparedStatement.setString(2, narmesteleder.orgnummer)
                 preparedStatement.setString(3, narmesteleder.fnr)
-                preparedStatement.setTimestamp(4, Timestamp.from(narmesteleder.aktivFom.atStartOfDay().toInstant(ZoneOffset.UTC)))
+                preparedStatement.setTimestamp(
+                    4,
+                    Timestamp.from(narmesteleder.aktivFom.atStartOfDay().toInstant(ZoneOffset.UTC))
+                )
                 preparedStatement.executeUpdate()
             }
             connection.commit()
@@ -44,8 +47,8 @@ class NarmestelederDb(private val database: DatabaseInterface) {
         return database.connection.use { connection ->
             connection.prepareStatement(
                 """
-                select * from narmesteleder order by last_update limit 1000;
-            """
+                    select * from narmesteleder where last_update > '2021-07-01' order by last_update limit 1000;
+                """
             ).use { ps ->
                 ps.executeQuery().toNarmestelederDb()
             }
