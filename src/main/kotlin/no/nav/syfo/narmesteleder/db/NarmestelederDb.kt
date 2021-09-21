@@ -2,8 +2,10 @@ package no.nav.syfo.narmesteleder.db
 
 import no.nav.syfo.application.db.DatabaseInterface
 import no.nav.syfo.narmesteleder.kafka.model.NarmestelederKafkaMessage
+import java.sql.ResultSet
 import java.sql.Timestamp
 import java.time.ZoneOffset
+import java.util.UUID
 
 class NarmestelederDb(private val database: DatabaseInterface) {
     fun insertOrUpdate(narmesteleder: NarmestelederKafkaMessage) {
@@ -37,4 +39,31 @@ class NarmestelederDb(private val database: DatabaseInterface) {
             connection.commit()
         }
     }
+
+    fun getNarmesteledereToUpdate(): List<NarmestelederDbModel> {
+        return database.connection.use { connection ->
+            connection.prepareStatement(
+                """
+                select * from narmesteleder order by last_update limit 1000;
+            """
+            ).use { ps ->
+                ps.executeQuery().toNarmestelederDb()
+            }
+        }
+    }
+}
+
+private fun ResultSet.toNarmestelederDb(): List<NarmestelederDbModel> {
+    val nlList = mutableListOf<NarmestelederDbModel>()
+    while (next()) {
+        nlList.add(
+            NarmestelederDbModel(
+                narmestelederId = UUID.fromString(getString("narmeste_leder_id")),
+                lastUpdated = getTimestamp("last_update").toInstant().atOffset(ZoneOffset.UTC),
+                fnr = getString("bruker_fnr"),
+                orgnummer = getString("orgnummer")
+            )
+        )
+    }
+    return nlList
 }

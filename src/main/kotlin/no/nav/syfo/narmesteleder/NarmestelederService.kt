@@ -1,6 +1,7 @@
 package no.nav.syfo.narmesteleder
 
 import no.nav.syfo.application.ApplicationState
+import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.narmesteleder.kafka.model.NarmestelederKafkaMessage
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -16,6 +17,7 @@ class NarmestelederService(
         kafkaConsumer.subscribe(listOf(narmestelederLeesahTopic))
         while (applicationState.ready) {
             kafkaConsumer.poll(Duration.ofMillis(10_000)).forEach {
+                log.info("handling nl skjema for ${it.partition()}:${it.offset()}")
                 updateNl(it.value())
             }
         }
