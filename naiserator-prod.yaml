@@ -43,9 +43,15 @@ spec:
       memory: 768Mi
   vault:
     enabled: false
+  envFrom:
+    - secret: narmesteleder-arbeidsforhold-secret
   webproxy: true
   kafka:
     pool: nav-prod
   env:
     - name: KAFKA_CLIENT_ID
       value: narmesteleder-arbeidsforhold
+    - name: SECURITYTOKENSERVICE_URL
+      value: https://api-gw.oera.no/security-token-service/rest/v1/sts/token
+    - name: REGISTER_BASE_PATH
+      value: https://api-gw.oera.no
