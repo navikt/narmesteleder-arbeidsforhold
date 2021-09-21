@@ -15,7 +15,7 @@ class ArbeidsforholdClient(private val httpClient: HttpClient, private val baseP
     private val sporingsinformasjon = "sporingsinformasjon"
 
     suspend fun getArbeidsforhold(fnr: String, ansettelsesperiodeFom: LocalDate, token: String): List<Arbeidsforhold> {
-        return httpClient.get(
+        return httpClient.get<List<Arbeidsforhold>>(
             "$arbeidsforholdPath?" +
                 "$ansettelsesperiodeFomQueryParam=$ansettelsesperiodeFom&" +
                 "$sporingsinformasjon=false"

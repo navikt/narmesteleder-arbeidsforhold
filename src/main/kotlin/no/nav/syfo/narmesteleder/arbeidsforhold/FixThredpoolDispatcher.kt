@@ -13,7 +13,7 @@ class FixThredpoolDispatcher private constructor() : CoroutineDispatcher() {
         val fixThredpoolDispatcher = FixThredpoolDispatcher()
     }
 
-    private val threadPool = Executors.newFixedThreadPool(2)
+    private val threadPool = Executors.newFixedThreadPool(4)
     private val dispatcher = threadPool.asCoroutineDispatcher()
     override fun dispatch(context: CoroutineContext, block: Runnable) {
         dispatcher.dispatch(context, block)

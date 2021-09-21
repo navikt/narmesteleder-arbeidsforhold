@@ -13,6 +13,7 @@ import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.narmesteleder.db.NarmestelederDbModel
 import no.nav.syfo.startBackgroundJob
 import no.nav.syfo.util.Unbounded
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.system.measureTimeMillis
 
 class NarmestelederArbeidsforholdUpdateService(
@@ -28,36 +29,36 @@ class NarmestelederArbeidsforholdUpdateService(
     }
 
     private suspend fun startUpdate() {
-        var gyldig = 0
-        var ugyldig = 0
+        val atomicCounter = AtomicInteger(0)
         val logJob = GlobalScope.launch(Dispatchers.Unbounded) {
             while (true) {
                 delay(10_000)
-                log.info("checked fortsatt gyldig: $gyldig ugyldig: $ugyldig")
+                log.info("Checked : ${atomicCounter.get()}")
             }
         }
         val narmesteleder = narmestelederDb.getNarmesteledereToUpdate()
         var checkedNarmesteleder: List<CheckedNarmesteleder>? = null
+
         val timeUsed = (
             measureTimeMillis {
-                val jobs = narmesteleder.map {
+                val jobs = narmesteleder.chunked(100).map {
                     GlobalScope.async(context = Dispatchers.Fixed) {
-                        val valid = checkNl(it)
-                        if (valid) {
-                            gyldig += 1
-                        } else {
-                            log.info("Should be disabled ${it.narmestelederId}")
-                            ugyldig += 1
+                        it.map {
+                            (try {
+                                CheckedNarmesteleder(it, checkNl(it), failed = false)
+                            } catch (ex: Exception) {
+                                CheckedNarmesteleder(it, true, failed = true)
+                            }).also { atomicCounter.incrementAndGet() }
                         }
-                        CheckedNarmesteleder(it, valid)
                     }
                 }
-                checkedNarmesteleder = jobs.awaitAll().map { it }
+                checkedNarmesteleder = jobs.awaitAll().flatten()
             } / 1000.0
-            )
-        val valid = checkedNarmesteleder!!.filter { it.valid }.size
-        val unvalid = checkedNarmesteleder!!.filter { !it.valid }.size
-        log.info("Checked ${narmesteleder.size}, gyldig: $valid, ugyldig: $unvalid, from: ${narmesteleder.first().lastUpdated}, to: ${narmesteleder.last().lastUpdated}, time used (seconds): $timeUsed")
+        )
+        val valid = checkedNarmesteleder!!.filter { it.valid && !it.failed }.size
+        val unvalid = checkedNarmesteleder!!.filter { !it.valid && !it.failed }.size
+        val failed = checkedNarmesteleder!!.filter { it.failed }.size
+        log.info("Checked ${narmesteleder.size}, gyldig: $valid, ugyldig: $unvalid, failed: $failed from: ${narmesteleder.first().lastUpdated}, to: ${narmesteleder.last().lastUpdated}, time used (seconds): $timeUsed")
         logJob.cancel()
     }
 
