@@ -55,8 +55,8 @@ class NarmestelederArbeidsforholdUpdateService(
                 checkedNarmesteleder = jobs.awaitAll().map { it }
             } / 1000.0
             )
-        val valid = checkedNarmesteleder!!.filter { it.valid }
-        val unvalid = checkedNarmesteleder!!.filter { !it.valid }
+        val valid = checkedNarmesteleder!!.filter { it.valid }.size
+        val unvalid = checkedNarmesteleder!!.filter { !it.valid }.size
         log.info("Checked ${narmesteleder.size}, gyldig: $valid, ugyldig: $unvalid, from: ${narmesteleder.first().lastUpdated}, to: ${narmesteleder.last().lastUpdated}, time used (seconds): $timeUsed")
         logJob.cancel()
     }

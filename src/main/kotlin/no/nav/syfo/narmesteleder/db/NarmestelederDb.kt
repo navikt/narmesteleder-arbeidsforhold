@@ -47,7 +47,7 @@ class NarmestelederDb(private val database: DatabaseInterface) {
         return database.connection.use { connection ->
             connection.prepareStatement(
                 """
-                    select * from narmesteleder where last_update > '2021-07-01' order by last_update limit 1000;
+                    select * from narmesteleder where last_update > '2021-05-01' order by last_update limit 200;
                 """
             ).use { ps ->
                 ps.executeQuery().toNarmestelederDb()

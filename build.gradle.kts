@@ -5,10 +5,10 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 group = "no.nav.syfo"
 version = "1.0.0"
 
-val coroutinesVersion = "1.4.2"
+val coroutinesVersion = "1.5.2"
 val jacksonVersion = "2.12.0"
 val kluentVersion = "1.61"
-val ktorVersion = "1.5.1"
+val ktorVersion = "1.6.3"
 val logbackVersion = "1.2.3"
 val logstashEncoderVersion = "6.5"
 val prometheusVersion = "0.9.0"
@@ -27,7 +27,7 @@ tasks.withType<Jar> {
 
 plugins {
     id("org.jmailen.kotlinter") version "3.3.0"
-    kotlin("jvm") version "1.4.21"
+    kotlin("jvm") version "1.5.30"
     id("com.diffplug.spotless") version "5.8.2"
     id("com.github.johnrengelman.shadow") version "6.1.0"
     jacoco
