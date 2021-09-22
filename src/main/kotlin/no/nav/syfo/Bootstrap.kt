@@ -113,7 +113,6 @@ fun main() {
         narmestelederKafkaProducer = narmestelederKafkaProducer
     )
 
-
     applicationState.ready = true
 
     narmestelederArbeidsforholdUpdateService.start()

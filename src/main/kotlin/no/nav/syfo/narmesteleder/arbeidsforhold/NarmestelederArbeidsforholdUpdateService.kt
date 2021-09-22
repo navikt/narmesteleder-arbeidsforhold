@@ -32,7 +32,6 @@ class NarmestelederArbeidsforholdUpdateService(
     private var valid = 0
     private var invalid = 0
     private var failed = 0
-
     private val nlIds: List<String> = emptyList()
 
     private suspend fun startUpdate() {
@@ -44,7 +43,7 @@ class NarmestelederArbeidsforholdUpdateService(
             }
         }
 
-        while (applicationState.ready) {
+        while (applicationState.ready && failed < 100) {
             updateNarmesteledere()
         }
     }
@@ -80,6 +79,7 @@ class NarmestelederArbeidsforholdUpdateService(
                 }
             }
         } catch (ex: Exception) {
+            log.error("Failed to check NL", ex)
             CheckedNarmesteleder(it, true, failed = true)
         }
     }
