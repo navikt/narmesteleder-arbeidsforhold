@@ -22,17 +22,23 @@ import no.nav.syfo.application.db.Database
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.toConsumerConfig
+import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.narmesteleder.arbeidsforhold.NarmestelederArbeidsforholdUpdateService
 import no.nav.syfo.narmesteleder.arbeidsforhold.client.ArbeidsforholdClient
 import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
-import no.nav.syfo.narmesteleder.kafka.model.NarmestelederKafkaMessage
+import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
+import no.nav.syfo.narmesteleder.kafka.model.NlResponseKafkaMessage
+import no.nav.syfo.narmesteleder.kafka.producer.NarmestelederKafkaProducer
 import no.nav.syfo.util.JacksonKafkaDeserializer
+import no.nav.syfo.util.JacksonKafkaSerializer
 import no.nav.syfo.util.Unbounded
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.common.serialization.StringDeserializer
+import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -50,9 +56,12 @@ fun main() {
     applicationServer.start()
 
     val kafkaConsumer = KafkaConsumer(
-        KafkaUtils.getAivenKafkaConfig().also { it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "100" }.toConsumerConfig("narmesteleder-arbeidsforhold", JacksonKafkaDeserializer::class),
+        KafkaUtils.getAivenKafkaConfig().also {
+            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "100"
+            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
+        }.toConsumerConfig("narmesteleder-arbeidsforhold", JacksonKafkaDeserializer::class),
         StringDeserializer(),
-        JacksonKafkaDeserializer(NarmestelederKafkaMessage::class)
+        JacksonKafkaDeserializer(NarmestelederLeesahKafkaMessage::class)
     )
 
     val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
@@ -86,15 +95,28 @@ fun main() {
         arbeidsforholdClient = arbeidsforholdClient,
         stsOidcClient = stsOidcClient
     )
+
+    val narmestelederKafkaProducer = NarmestelederKafkaProducer(
+        env.narmestelederTopic,
+        KafkaProducer(
+            KafkaUtils.getAivenKafkaConfig()
+                .toProducerConfig("narmesteleder-arbeidsforhold", JacksonKafkaSerializer::class),
+            StringSerializer(),
+            JacksonKafkaSerializer<NlResponseKafkaMessage>()
+        )
+    )
+
     val narmestelederArbeidsforholdUpdateService = NarmestelederArbeidsforholdUpdateService(
         applicationState = applicationState,
         narmestelederDb = narmesteLederDb,
-        arbeidsgiverService = arbeidsgiverService
+        arbeidsgiverService = arbeidsgiverService,
+        narmestelederKafkaProducer = narmestelederKafkaProducer
     )
 
-    narmestelederArbeidsforholdUpdateService.start()
 
     applicationState.ready = true
+
+    narmestelederArbeidsforholdUpdateService.start()
 
     startBackgroundJob(applicationState) {
         narmestelederService.start()

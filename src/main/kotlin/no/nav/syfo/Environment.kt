@@ -15,6 +15,7 @@ data class Environment(
     val stsApiKey: String = getEnvVar("STS_API_KEY"),
     val registerBasePath: String = getEnvVar("REGISTER_BASE_PATH"),
     val stsUrl: String = getEnvVar("SECURITYTOKENSERVICE_URL"),
+    val narmestelederTopic: String = "teamsykmelding.syfo-narmesteleder"
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$dbHost:$dbPort/$dbName"
