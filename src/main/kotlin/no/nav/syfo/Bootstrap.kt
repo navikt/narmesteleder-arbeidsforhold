@@ -100,9 +100,7 @@ fun main() {
         env.narmestelederTopic,
         KafkaProducer(
             KafkaUtils.getAivenKafkaConfig()
-                .toProducerConfig("narmesteleder-arbeidsforhold", JacksonKafkaSerializer::class),
-            StringSerializer(),
-            JacksonKafkaSerializer<NlResponseKafkaMessage>()
+                .toProducerConfig("narmesteleder-arbeidsforhold-producer", JacksonKafkaSerializer::class, StringSerializer::class)
         )
     )
 
