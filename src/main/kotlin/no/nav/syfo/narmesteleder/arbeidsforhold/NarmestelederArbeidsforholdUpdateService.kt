@@ -49,7 +49,7 @@ class NarmestelederArbeidsforholdUpdateService(
             if (narmesteleder.isEmpty()) {
                 return@use
             }
-            val checkedNarmesteleder: List<CheckedNarmesteleder> = narmesteleder.chunked(25).map {
+            val checkedNarmesteleder: List<CheckedNarmesteleder> = narmesteleder.chunked(100).map {
                 GlobalScope.async(context = Dispatchers.Fixed) {
                     checkNarmesteleder(it)
                 }
@@ -59,8 +59,7 @@ class NarmestelederArbeidsforholdUpdateService(
             invalid += checkedNarmesteleder.filter { !it.valid && !it.failed }.size
             failed += checkedNarmesteleder.filter { it.failed }.size
             lastUpdateTimestamp = narmesteleder.last().lastUpdated
-            checkedNarmesteleder.filter { !it.failed }
-                .forEach { updateLastUpdate(it) }
+            updateLastUpdate(checkedNarmesteleder.filter { !it.failed })
         }
     }
 

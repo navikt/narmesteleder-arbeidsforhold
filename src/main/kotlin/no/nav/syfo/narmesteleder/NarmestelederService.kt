@@ -25,6 +25,8 @@ class NarmestelederService(
     private var deletes = 0
     private var logTotal = -1
     suspend fun start() {
+        log.info("Starting jobs in 60 seconds, to allow pods to terminate before start")
+        delay(60_000)
         kafkaConsumer.subscribe(listOf(narmestelederLeesahTopic))
         narmestelederArbeidsforholdUpdateService.startLogging()
         startLogging()

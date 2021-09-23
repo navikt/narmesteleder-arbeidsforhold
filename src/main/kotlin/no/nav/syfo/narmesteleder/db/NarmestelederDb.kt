@@ -61,6 +61,22 @@ class NarmestelederDb(private val database: DatabaseInterface) {
         }
     }
 }
+
+fun Connection.updateLastUpdate(narmesteledere: List<CheckedNarmesteleder>) {
+    prepareStatement(
+        """
+        update narmesteleder set last_update = ? where narmeste_leder_id = ?;
+    """
+    ).use { ps ->
+        narmesteledere.forEach {
+            ps.setTimestamp(1, Timestamp.from(Instant.now()))
+            ps.setString(2, it.narmestelederDbModel.narmestelederId.toString())
+            ps.addBatch()
+        }
+        ps.executeBatch()
+    }
+}
+
 fun Connection.updateLastUpdate(narmesteleder: CheckedNarmesteleder) {
     prepareStatement(
         """
@@ -75,7 +91,7 @@ fun Connection.updateLastUpdate(narmesteleder: CheckedNarmesteleder) {
 fun Connection.getNarmesteledereToUpdate(lastUpdateLimit: OffsetDateTime): List<NarmestelederDbModel> {
     return prepareStatement(
         """
-                    select * from narmesteleder where last_update < ? order by last_update limit 100 for update skip locked ;
+                    select * from narmesteleder where last_update < ? order by last_update limit 1000 for update skip locked ;
                 """
     ).use { ps ->
         ps.setTimestamp(1, Timestamp.from(lastUpdateLimit.toInstant()))

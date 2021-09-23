@@ -12,6 +12,7 @@ import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.narmesteleder.arbeidsforhold.model.Arbeidsgiverinfo
 import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
+import no.nav.syfo.narmesteleder.db.getNarmesteledereToUpdate
 import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
 import no.nav.syfo.narmesteleder.kafka.producer.NarmestelederKafkaProducer
 import org.amshove.kluent.shouldBeEqualTo
@@ -126,6 +127,19 @@ class NarmestelederArbeidsforholdUpdateServiceTest : Spek({
             }
             coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any()) }
             verify(exactly = 0) { narmestelederKafkaProducer.sendNlAvbrutt(any()) }
+        }
+
+        it("Test batch update") {
+            (0 until 100).forEach {
+                database.insertOrUpdate(narmesteleder.copy(narmesteLederId = UUID.randomUUID()))
+            }
+            coEvery { arbeidsgiverService.getArbeidsgivere("1") } returns listOf(Arbeidsgiverinfo("1", null))
+            runBlocking {
+                narmestelederArbeidsforholdUpdateService.updateNarmesteledere()
+                database.use {
+                    getNarmesteledereToUpdate(OffsetDateTime.now().minusMonths(1)).size shouldBeEqualTo 0
+                }
+            }
         }
     }
 })
