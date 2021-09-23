@@ -53,12 +53,14 @@ class NarmestelederService(
 
     private fun startLogging() {
         GlobalScope.launch(Dispatchers.Unbounded) {
-            val total = inserts + deletes
-            if (logTotal != total) {
-                log.info("New nl-skjema $inserts, deleted nl: $deletes")
-                logTotal = total
+            while (true) {
+                val total = inserts + deletes
+                if (logTotal != total) {
+                    log.info("New nl-skjema $inserts, deleted nl: $deletes")
+                    logTotal = total
+                }
+                delay(60_000)
             }
-            delay(60_000)
         }
     }
 }

@@ -77,7 +77,7 @@ class NarmestelederArbeidsforholdUpdateService(
                 }
             }
         } catch (ex: Exception) {
-            if(firstError) {
+            if (firstError) {
                 log.error("Failed to check NL", ex)
                 firstError = false
             }
