@@ -30,7 +30,7 @@ class NarmestelederService(
         startLogging()
         while (applicationState.ready) {
             narmestelederArbeidsforholdUpdateService.updateNarmesteledere()
-            kafkaConsumer.poll(Duration.ofMillis(0)).forEach {
+            kafkaConsumer.poll(Duration.ofMillis(1000)).forEach {
                 updateNl(it.value())
             }
         }
