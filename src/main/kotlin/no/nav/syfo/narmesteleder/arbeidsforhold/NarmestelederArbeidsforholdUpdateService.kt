@@ -14,8 +14,9 @@ import no.nav.syfo.narmesteleder.db.NarmestelederDbModel
 import no.nav.syfo.narmesteleder.db.getNarmesteledereToUpdate
 import no.nav.syfo.narmesteleder.db.updateLastUpdate
 import no.nav.syfo.narmesteleder.kafka.producer.NarmestelederKafkaProducer
-import no.nav.syfo.startBackgroundJob
 import no.nav.syfo.util.Unbounded
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 class NarmestelederArbeidsforholdUpdateService(
     private val applicationState: ApplicationState,
@@ -24,34 +25,33 @@ class NarmestelederArbeidsforholdUpdateService(
     private val narmestelederKafkaProducer: NarmestelederKafkaProducer,
 ) {
 
-    fun start() {
-        startBackgroundJob(applicationState) {
-            startUpdate()
-        }
-    }
+    private var changes: Boolean = false
     private var valid = 0
     private var invalid = 0
     private var failed = 0
-    private val nlIds: List<String> = emptyList()
+    private var lastUpdateTimestamp: OffsetDateTime = OffsetDateTime.MIN
 
-    private suspend fun startUpdate() {
-
+    suspend fun startLogging() {
         GlobalScope.launch(Dispatchers.Unbounded) {
             while (true) {
                 delay(60_000)
-                log.info("Checked ${valid + invalid + failed}, valid: $valid, invalid: $invalid, failed: $failed")
+                if (changes) {
+                    log.info("Checked ${valid + invalid + failed}, valid: $valid, invalid: $invalid, failed: $failed, lastUpdate: $lastUpdateTimestamp")
+                }
             }
-        }
-
-        while (applicationState.ready && failed < 100) {
-            updateNarmesteledere()
         }
     }
 
     suspend fun updateNarmesteledere() {
         narmestelederDb.use {
-            val narmesteleder = getNarmesteledereToUpdate()
-            val checkedNarmesteleder: List<CheckedNarmesteleder> = narmesteleder.chunked(100).map {
+            val lastUpdateLimit = OffsetDateTime.now(ZoneOffset.UTC).minusMonths(1)
+            val narmesteleder = getNarmesteledereToUpdate(lastUpdateLimit)
+            if (narmesteleder.isEmpty()) {
+                changes = false
+                return@use
+            }
+            changes = true
+            val checkedNarmesteleder: List<CheckedNarmesteleder> = narmesteleder.chunked(25).map {
                 GlobalScope.async(context = Dispatchers.Fixed) {
                     checkNarmesteleder(it)
                 }
@@ -60,7 +60,7 @@ class NarmestelederArbeidsforholdUpdateService(
             valid += checkedNarmesteleder.filter { it.valid && !it.failed }.size
             invalid += checkedNarmesteleder.filter { !it.valid && !it.failed }.size
             failed += checkedNarmesteleder.filter { it.failed }.size
-
+            lastUpdateTimestamp = narmesteleder.last().lastUpdated
             checkedNarmesteleder.filter { !it.failed }
                 .forEach { updateLastUpdate(it) }
         }

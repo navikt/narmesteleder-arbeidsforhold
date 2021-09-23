@@ -1,12 +1,14 @@
 package no.nav.syfo.narmesteleder.db
 
 import no.nav.syfo.application.db.DatabaseInterface
+import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.arbeidsforhold.CheckedNarmesteleder
 import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.Timestamp
 import java.time.Instant
+import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 
@@ -14,8 +16,13 @@ class NarmestelederDb(private val database: DatabaseInterface) {
 
     suspend fun use(block: suspend Connection.() -> Unit) {
         database.connection.use { connection ->
-            block(connection)
-            connection.commit()
+            try {
+                block(connection)
+                connection.commit()
+            } catch (ex: Exception) {
+                connection.rollback()
+                log.error("database transaction failed, doing rollback", ex)
+            }
         }
     }
 
@@ -24,7 +31,7 @@ class NarmestelederDb(private val database: DatabaseInterface) {
             connection.prepareStatement(
                 """
                insert into narmesteleder(narmeste_leder_id, orgnummer, bruker_fnr, last_update) 
-               values (?, ?, ?, ?) on conflict (narmeste_leder_id) do nothing;
+               values (?, ?, ?, ?) on conflict (narmeste_leder_id) do nothing ;
             """
             ).use { preparedStatement ->
                 preparedStatement.setString(1, narmesteleder.narmesteLederId.toString())
@@ -65,12 +72,13 @@ fun Connection.updateLastUpdate(narmesteleder: CheckedNarmesteleder) {
         it.executeUpdate()
     }
 }
-fun Connection.getNarmesteledereToUpdate(): List<NarmestelederDbModel> {
+fun Connection.getNarmesteledereToUpdate(lastUpdateLimit: OffsetDateTime): List<NarmestelederDbModel> {
     return prepareStatement(
         """
-                    select * from narmesteleder order by last_update limit 100 for update skip locked ;
+                    select * from narmesteleder where last_update < ? order by last_update limit 100 for update skip locked ;
                 """
     ).use { ps ->
+        ps.setTimestamp(1, Timestamp.from(lastUpdateLimit.toInstant()))
         ps.executeQuery().toNarmestelederDb()
     }
 }

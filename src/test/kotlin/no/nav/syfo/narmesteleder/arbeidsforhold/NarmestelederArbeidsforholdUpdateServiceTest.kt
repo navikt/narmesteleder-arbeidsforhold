@@ -2,6 +2,7 @@ package no.nav.syfo.narmesteleder.arbeidsforhold
 
 import io.mockk.clearMocks
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -110,6 +111,21 @@ class NarmestelederArbeidsforholdUpdateServiceTest : Spek({
                 afterUpdate.lastUpdated shouldBeEqualTo beforeUpdate.lastUpdated
             }
             verify(exactly = 1) { narmestelederKafkaProducer.sendNlAvbrutt(any()) }
+        }
+
+        it("Should not update recently updated") {
+            database.insertOrUpdate(narmesteleder.copy(aktivFom = LocalDate.now().minusDays(1)))
+
+            runBlocking {
+
+                val beforeUpdate = TestDb.getNarmesteleder().first()
+                narmestelederArbeidsforholdUpdateService.updateNarmesteledere()
+                val afterUpdate = TestDb.getNarmesteleder().first()
+
+                afterUpdate.lastUpdated shouldBeEqualTo beforeUpdate.lastUpdated
+            }
+            coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any()) }
+            verify(exactly = 0) { narmestelederKafkaProducer.sendNlAvbrutt(any()) }
         }
     }
 })

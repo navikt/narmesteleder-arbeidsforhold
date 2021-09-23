@@ -29,7 +29,6 @@ import no.nav.syfo.narmesteleder.arbeidsforhold.client.ArbeidsforholdClient
 import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
-import no.nav.syfo.narmesteleder.kafka.model.NlResponseKafkaMessage
 import no.nav.syfo.narmesteleder.kafka.producer.NarmestelederKafkaProducer
 import no.nav.syfo.util.JacksonKafkaDeserializer
 import no.nav.syfo.util.JacksonKafkaSerializer
@@ -78,7 +77,7 @@ fun main() {
 
     val database = Database(env, applicationState)
     val narmesteLederDb = NarmestelederDb(database)
-    val narmestelederService = NarmestelederService(kafkaConsumer, narmesteLederDb, applicationState, env.narmestelederLeesahTopic)
+
     val arbeidsforholdClient = ArbeidsforholdClient(
         httpClient = httpClient,
         basePath = env.registerBasePath,
@@ -110,10 +109,9 @@ fun main() {
         arbeidsgiverService = arbeidsgiverService,
         narmestelederKafkaProducer = narmestelederKafkaProducer
     )
+    val narmestelederService = NarmestelederService(kafkaConsumer, narmesteLederDb, applicationState, env.narmestelederLeesahTopic, narmestelederArbeidsforholdUpdateService)
 
     applicationState.ready = true
-
-    narmestelederArbeidsforholdUpdateService.start()
 
     startBackgroundJob(applicationState) {
         narmestelederService.start()
