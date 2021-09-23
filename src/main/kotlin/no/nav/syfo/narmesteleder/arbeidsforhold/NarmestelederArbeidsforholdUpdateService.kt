@@ -24,20 +24,20 @@ class NarmestelederArbeidsforholdUpdateService(
     private val arbeidsgiverService: ArbeidsgiverService,
     private val narmestelederKafkaProducer: NarmestelederKafkaProducer,
 ) {
-
-    private var changes: Boolean = false
     private var valid = 0
     private var invalid = 0
     private var failed = 0
     private var lastUpdateTimestamp: OffsetDateTime = OffsetDateTime.MIN
-
+    private var totalLastLog = -1
     suspend fun startLogging() {
         GlobalScope.launch(Dispatchers.Unbounded) {
             while (true) {
-                delay(60_000)
-                if (changes) {
+                val total = (valid + invalid + failed)
+                if (totalLastLog != total) {
                     log.info("Checked ${valid + invalid + failed}, valid: $valid, invalid: $invalid, failed: $failed, lastUpdate: $lastUpdateTimestamp")
+                    totalLastLog = total
                 }
+                delay(60_000)
             }
         }
     }
@@ -47,10 +47,8 @@ class NarmestelederArbeidsforholdUpdateService(
             val lastUpdateLimit = OffsetDateTime.now(ZoneOffset.UTC).minusMonths(1)
             val narmesteleder = getNarmesteledereToUpdate(lastUpdateLimit)
             if (narmesteleder.isEmpty()) {
-                changes = false
                 return@use
             }
-            changes = true
             val checkedNarmesteleder: List<CheckedNarmesteleder> = narmesteleder.chunked(25).map {
                 GlobalScope.async(context = Dispatchers.Fixed) {
                     checkNarmesteleder(it)
