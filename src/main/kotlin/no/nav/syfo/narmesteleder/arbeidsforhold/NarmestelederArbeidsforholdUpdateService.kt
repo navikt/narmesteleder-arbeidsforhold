@@ -29,6 +29,7 @@ class NarmestelederArbeidsforholdUpdateService(
     private var failed = 0
     private var lastUpdateTimestamp: OffsetDateTime = OffsetDateTime.MIN
     private var totalLastLog = -1
+    private var firstError = true
     suspend fun startLogging() {
         GlobalScope.launch(Dispatchers.Unbounded) {
             while (true) {
@@ -76,7 +77,10 @@ class NarmestelederArbeidsforholdUpdateService(
                 }
             }
         } catch (ex: Exception) {
-            log.error("Failed to check NL", ex)
+            if(firstError) {
+                log.error("Failed to check NL", ex)
+                firstError = false
+            }
             CheckedNarmesteleder(it, true, failed = true)
         }
     }
