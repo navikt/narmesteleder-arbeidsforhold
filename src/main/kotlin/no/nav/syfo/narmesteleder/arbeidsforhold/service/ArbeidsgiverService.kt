@@ -26,11 +26,7 @@ class ArbeidsgiverService(
         }
         return arbeidsgivere.filter {
             it.arbeidsgiver.type == "Organisasjon"
-        }.sortedWith(
-            compareByDescending(nullsLast()) {
-                it.ansettelsesperiode.periode.tom
-            }
-        ).distinctBy {
+        }.distinctBy {
             it.arbeidsgiver.organisasjonsnummer
         }.map {
             toArbeidsgiverInfo(it)

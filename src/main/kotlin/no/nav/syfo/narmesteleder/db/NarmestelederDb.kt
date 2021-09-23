@@ -1,19 +1,37 @@
 package no.nav.syfo.narmesteleder.db
 
 import no.nav.syfo.application.db.DatabaseInterface
-import no.nav.syfo.narmesteleder.kafka.model.NarmestelederKafkaMessage
+import no.nav.syfo.log
+import no.nav.syfo.narmesteleder.arbeidsforhold.CheckedNarmesteleder
+import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
+import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.Timestamp
+import java.time.Instant
+import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 
 class NarmestelederDb(private val database: DatabaseInterface) {
-    fun insertOrUpdate(narmesteleder: NarmestelederKafkaMessage) {
+
+    suspend fun use(block: suspend Connection.() -> Unit) {
+        database.connection.use { connection ->
+            try {
+                block(connection)
+                connection.commit()
+            } catch (ex: Exception) {
+                connection.rollback()
+                log.error("database transaction failed, doing rollback", ex)
+            }
+        }
+    }
+
+    fun insertOrUpdate(narmesteleder: NarmestelederLeesahKafkaMessage) {
         database.connection.use { connection ->
             connection.prepareStatement(
                 """
                insert into narmesteleder(narmeste_leder_id, orgnummer, bruker_fnr, last_update) 
-               values (?, ?, ?, ?) on conflict (narmeste_leder_id) do nothing;
+               values (?, ?, ?, ?) on conflict (narmeste_leder_id) do nothing ;
             """
             ).use { preparedStatement ->
                 preparedStatement.setString(1, narmesteleder.narmesteLederId.toString())
@@ -29,7 +47,7 @@ class NarmestelederDb(private val database: DatabaseInterface) {
         }
     }
 
-    fun remove(narmesteleder: NarmestelederKafkaMessage) {
+    fun remove(narmesteleder: NarmestelederLeesahKafkaMessage) {
         database.connection.use { connection ->
             connection.prepareStatement(
                 """
@@ -42,28 +60,37 @@ class NarmestelederDb(private val database: DatabaseInterface) {
             connection.commit()
         }
     }
-
-    fun getNarmesteledereToUpdate(): List<NarmestelederDbModel> {
-        return database.connection.use { connection ->
-            connection.prepareStatement(
+}
+fun Connection.updateLastUpdate(narmesteleder: CheckedNarmesteleder) {
+    prepareStatement(
+        """
+        update narmesteleder set last_update = ? where narmeste_leder_id = ?;
+    """
+    ).use {
+        it.setTimestamp(1, Timestamp.from(Instant.now()))
+        it.setString(2, narmesteleder.narmestelederDbModel.narmestelederId.toString())
+        it.executeUpdate()
+    }
+}
+fun Connection.getNarmesteledereToUpdate(lastUpdateLimit: OffsetDateTime): List<NarmestelederDbModel> {
+    return prepareStatement(
+        """
+                    select * from narmesteleder where last_update < ? order by last_update limit 100 for update skip locked ;
                 """
-                    select * from narmesteleder where last_update > '2021-03-06' order by last_update limit 1000;
-                """
-            ).use { ps ->
-                ps.executeQuery().toNarmestelederDb()
-            }
-        }
+    ).use { ps ->
+        ps.setTimestamp(1, Timestamp.from(lastUpdateLimit.toInstant()))
+        ps.executeQuery().toNarmestelederDb()
     }
 }
 
-private fun ResultSet.toNarmestelederDb(): List<NarmestelederDbModel> {
+fun ResultSet.toNarmestelederDb(): List<NarmestelederDbModel> {
     val nlList = mutableListOf<NarmestelederDbModel>()
     while (next()) {
         nlList.add(
             NarmestelederDbModel(
                 narmestelederId = UUID.fromString(getString("narmeste_leder_id")),
                 lastUpdated = getTimestamp("last_update").toInstant().atOffset(ZoneOffset.UTC),
-                fnr = getString("bruker_fnr"),
+                brukerFnr = getString("bruker_fnr"),
                 orgnummer = getString("orgnummer")
             )
         )
