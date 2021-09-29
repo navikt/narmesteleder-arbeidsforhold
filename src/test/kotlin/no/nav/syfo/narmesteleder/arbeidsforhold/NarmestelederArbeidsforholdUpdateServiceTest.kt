@@ -8,7 +8,6 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import no.nav.syfo.TestDb
-import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.narmesteleder.arbeidsforhold.model.Arbeidsgiverinfo
 import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
@@ -27,7 +26,6 @@ class NarmestelederArbeidsforholdUpdateServiceTest : Spek({
     val arbeidsgiverService = mockk<ArbeidsgiverService>()
     val narmestelederKafkaProducer = mockk<NarmestelederKafkaProducer>(relaxed = true)
     val narmestelederArbeidsforholdUpdateService = NarmestelederArbeidsforholdUpdateService(
-        ApplicationState(true, true),
         database,
         arbeidsgiverService,
         narmestelederKafkaProducer

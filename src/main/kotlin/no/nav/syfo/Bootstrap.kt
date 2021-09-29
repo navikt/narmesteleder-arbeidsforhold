@@ -105,7 +105,6 @@ fun main() {
     )
 
     val narmestelederArbeidsforholdUpdateService = NarmestelederArbeidsforholdUpdateService(
-        applicationState = applicationState,
         narmestelederDb = narmesteLederDb,
         arbeidsgiverService = arbeidsgiverService,
         narmestelederKafkaProducer = narmestelederKafkaProducer

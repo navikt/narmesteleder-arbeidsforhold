@@ -4,7 +4,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.metrics.CHECKED_NL_COUNTER
 import no.nav.syfo.application.metrics.ERROR_COUNTER
 import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
@@ -17,7 +16,6 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 class NarmestelederArbeidsforholdUpdateService(
-    private val applicationState: ApplicationState,
     private val narmestelederDb: NarmestelederDb,
     private val arbeidsgiverService: ArbeidsgiverService,
     private val narmestelederKafkaProducer: NarmestelederKafkaProducer,
