@@ -19,6 +19,7 @@ import no.nav.syfo.application.ApplicationServer
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.db.Database
+import no.nav.syfo.application.metrics.ERROR_COUNTER
 import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.toConsumerConfig
@@ -123,6 +124,7 @@ fun startBackgroundJob(applicationState: ApplicationState, block: suspend Corout
         try {
             block()
         } catch (ex: Exception) {
+            ERROR_COUNTER.labels("background-task").inc()
             log.error("Error in background task, restarting application", ex)
             applicationState.alive = false
             applicationState.ready = false
