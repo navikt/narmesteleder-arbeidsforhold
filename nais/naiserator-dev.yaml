@@ -55,3 +55,4 @@ spec:
       value: https://api-gw-q1.oera.no/security-token-service/rest/v1/sts/token
     - name: REGISTER_BASE_PATH
       value: https://api-gw-q1.oera.no
+
