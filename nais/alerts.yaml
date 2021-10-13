@@ -1,0 +1,25 @@
+apiVersion: "nais.io/v1"
+kind: "Alert"
+metadata:
+  name: narmesteleder-arbeidsforhold-alerts
+  namespace: teamsykmelding
+  labels:
+    team: teamsykmelding
+spec:
+  receivers:
+    slack:
+      channel: '#sykmelding-alerts'
+      #prependText: '<!here> | '
+  alerts:
+    - alert: Narmesteleder-arbeidsforhold app er nede
+      expr: up{app="narmesteleder-arbeidsforhold", job="kubernetes-pods"} == 0
+      for: 5m
+      description: "App {{ $labels.app }} er nede i namespace {{ $labels.kubernetes_namespace }}"
+      action: "`kubectl describe pod {{ $labels.kubernetes_pod_name }} -n {{ $labels.kubernetes_namespace }}` for events, og `kubectl logs {{ $labels.kubernetes_pod_name }} -n {{ $labels.kubernetes_namespace }}` for logger"
+    - alert: narmesteleder-arbeidsforhold-kafka-offset
+      expr: kafka_consumergroup_group_sum_lag{group=~"narmesteleder-arbeidsforhold"} > 100
+      for: 1m
+      description: "narmesteleder-arbeidsforhold kafka-lag er høyt"
+      action: "Sjekk om narmesteleder-arbeidsforhold leser fra kafka"
+      sla: respond within 1h, during office hours
+      severity: danger

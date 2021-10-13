@@ -50,15 +50,25 @@ jobs:
           docker build --tag ${IMAGE} .
           docker login docker.pkg.github.com -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
           docker push ${IMAGE}
-      - name: Deploy to Preprod
-        uses: nais/deploy/actions/deploy@master
+  deploy-dev:
+    name: Deploy to dev
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: nais/deploy/actions/deploy@master
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
-          RESOURCE: naiserator-dev.yaml
-      - name: Deploy to Prod
-        uses: nais/deploy/actions/deploy@master
+          RESOURCE: nais/naiserator-dev.yaml
+
+  deploy-prod:
+    name: Deploy to prod
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: nais/deploy/actions/deploy@master
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-gcp
-          RESOURCE: naiserator-prod.yaml
+          RESOURCE: nais/naiserator-prod.yaml
