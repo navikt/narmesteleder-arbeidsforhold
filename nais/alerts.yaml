@@ -16,7 +16,7 @@ spec:
       for: 5m
       description: "App {{ $labels.app }} er nede i namespace {{ $labels.kubernetes_namespace }}"
       action: "`kubectl describe pod {{ $labels.kubernetes_pod_name }} -n {{ $labels.kubernetes_namespace }}` for events, og `kubectl logs {{ $labels.kubernetes_pod_name }} -n {{ $labels.kubernetes_namespace }}` for logger"
-  - alert: narmesteleder-arbeidsforhold-kafka-offset
+    - alert: narmesteleder-arbeidsforhold-kafka-offset
       expr: kafka_consumergroup_group_sum_lag{group=~"narmesteleder-arbeidsforhold"} > 100
       for: 1m
       description: "narmesteleder-arbeidsforhold kafka-lag er høyt"
