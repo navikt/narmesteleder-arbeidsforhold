@@ -23,7 +23,7 @@ class NarmestelederService(
         kafkaConsumer.subscribe(listOf(narmestelederLeesahTopic))
         while (applicationState.ready) {
             narmestelederArbeidsforholdUpdateService.updateNarmesteledere()
-            kafkaConsumer.poll(Duration.ofMillis(1000)).forEach {
+            kafkaConsumer.poll(Duration.ofMillis(10_000)).forEach {
                 updateNl(it.value())
             }
         }
