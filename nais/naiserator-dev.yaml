@@ -48,6 +48,10 @@ spec:
   webproxy: true
   kafka:
     pool: nav-dev
+  azure:
+    application:
+      enabled: true
+      tenant: trygdeetaten.no
   env:
     - name: KAFKA_CLIENT_ID
       value: narmesteleder-arbeidsforhold
