@@ -60,4 +60,4 @@ spec:
     - name: AAREG_URL
       value: https://aareg-services.prod-fss-pub.nais.io
     - name: AAREG_SCOPE
-      value: api://prod-fss:arbeidsforhold:aareg-services-nais/.default
+      value: api://prod-fss.arbeidsforhold.aareg-services-nais/.default
