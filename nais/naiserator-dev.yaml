@@ -50,9 +50,14 @@ spec:
     application:
       enabled: true
       tenant: trygdeetaten.no
+  accessPolicy:
+    outbound:
+      external:
+        - host: aareg-services-q1.dev-fss-pub.nais.io
   env:
     - name: KAFKA_CLIENT_ID
       value: narmesteleder-arbeidsforhold
     - name: AAREG_URL
       value: https://aareg-services-q1.dev-fss-pub.nais.io
-
+    - name: AAREG_SCOPE
+      value: api://dev-fss:arbeidsforhold:aareg-services-nais-q1/.default
