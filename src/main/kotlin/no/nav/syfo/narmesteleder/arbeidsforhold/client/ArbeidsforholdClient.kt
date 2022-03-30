@@ -7,10 +7,12 @@ import io.ktor.http.HttpHeaders
 import no.nav.syfo.narmesteleder.arbeidsforhold.model.Arbeidsforhold
 import java.time.LocalDate
 
-class ArbeidsforholdClient(private val httpClient: HttpClient, private val basePath: String, private val apiKey: String) {
-    private val arbeidsforholdPath = "$basePath/aareg-services/api/v1/arbeidstaker/arbeidsforhold"
+class ArbeidsforholdClient(
+    private val httpClient: HttpClient,
+    private val url: String
+) {
+    private val arbeidsforholdPath = "$url/api/v1/arbeidstaker/arbeidsforhold"
     private val navPersonident = "Nav-Personident"
-    private val navConsumerToken = "Nav-Consumer-Token"
     private val ansettelsesperiodeFomQueryParam = "ansettelsesperiodeFom"
     private val sporingsinformasjon = "sporingsinformasjon"
 
@@ -20,10 +22,8 @@ class ArbeidsforholdClient(private val httpClient: HttpClient, private val baseP
                 "$ansettelsesperiodeFomQueryParam=$ansettelsesperiodeFom&" +
                 "$sporingsinformasjon=false"
         ) {
-            header("x-nav-apikey", apiKey)
             header(navPersonident, fnr)
             header(HttpHeaders.Authorization, token)
-            header(navConsumerToken, token)
         }
     }
 }

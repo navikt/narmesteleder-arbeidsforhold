@@ -23,12 +23,12 @@ import no.nav.syfo.application.createApplicationEngine
 import no.nav.syfo.application.db.Database
 import no.nav.syfo.application.exception.ServiceUnavailableException
 import no.nav.syfo.application.metrics.ERROR_COUNTER
-import no.nav.syfo.client.StsOidcClient
 import no.nav.syfo.kafka.aiven.KafkaUtils
 import no.nav.syfo.kafka.toConsumerConfig
 import no.nav.syfo.kafka.toProducerConfig
 import no.nav.syfo.narmesteleder.NarmestelederService
 import no.nav.syfo.narmesteleder.arbeidsforhold.NarmestelederArbeidsforholdUpdateService
+import no.nav.syfo.narmesteleder.arbeidsforhold.client.AccessTokenClient
 import no.nav.syfo.narmesteleder.arbeidsforhold.client.ArbeidsforholdClient
 import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
@@ -88,22 +88,16 @@ fun main() {
 
     val database = Database(env, applicationState)
     val narmesteLederDb = NarmestelederDb(database)
+    val accessTokenClient = AccessTokenClient(env.aadAccessTokenUrl, env.clientId, env.clientSecret, httpClient)
 
     val arbeidsforholdClient = ArbeidsforholdClient(
         httpClient = httpClient,
-        basePath = env.registerBasePath,
-        apiKey = env.aaregApiKey
-    )
-    val stsOidcClient = StsOidcClient(
-        username = env.serviceuserUsername,
-        password = env.serviceuserPassword,
-        stsUrl = env.stsUrl,
-        apiKey = env.stsApiKey
-
+        url = env.aaregUrl
     )
     val arbeidsgiverService = ArbeidsgiverService(
         arbeidsforholdClient = arbeidsforholdClient,
-        stsOidcClient = stsOidcClient
+        accessTokenClient = accessTokenClient,
+        scope = env.aaregScope
     )
 
     val narmestelederKafkaProducer = NarmestelederKafkaProducer(

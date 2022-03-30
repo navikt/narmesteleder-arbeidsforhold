@@ -1,6 +1,6 @@
 package no.nav.syfo.narmesteleder.arbeidsforhold.service
 
-import no.nav.syfo.client.StsOidcClient
+import no.nav.syfo.narmesteleder.arbeidsforhold.client.AccessTokenClient
 import no.nav.syfo.narmesteleder.arbeidsforhold.client.ArbeidsforholdClient
 import no.nav.syfo.narmesteleder.arbeidsforhold.model.Arbeidsforhold
 import no.nav.syfo.narmesteleder.arbeidsforhold.model.Arbeidsgiverinfo
@@ -8,15 +8,15 @@ import java.time.LocalDate
 
 class ArbeidsgiverService(
     private val arbeidsforholdClient: ArbeidsforholdClient,
-    private val stsOidcClient: StsOidcClient
+    private val accessTokenClient: AccessTokenClient,
+    private val scope: String
 ) {
     suspend fun getArbeidsgivere(fnr: String): List<Arbeidsgiverinfo> {
-        val stsToken = stsOidcClient.oidcToken()
         val ansettelsesperiodeFom = LocalDate.now().minusMonths(4)
         val arbeidsgivere = arbeidsforholdClient.getArbeidsforhold(
             fnr = fnr,
             ansettelsesperiodeFom = ansettelsesperiodeFom,
-            token = "Bearer ${stsToken.access_token}",
+            token = "Bearer ${accessTokenClient.getAccessToken(scope)}",
         )
 
         if (arbeidsgivere.isEmpty()) {

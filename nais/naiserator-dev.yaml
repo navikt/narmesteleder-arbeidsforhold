@@ -43,8 +43,6 @@ spec:
       memory: 450Mi
   vault:
     enabled: false
-  envFrom:
-    - secret: narmesteleder-arbeidsforhold-secret
   webproxy: true
   kafka:
     pool: nav-dev
@@ -52,11 +50,14 @@ spec:
     application:
       enabled: true
       tenant: trygdeetaten.no
+  accessPolicy:
+    outbound:
+      external:
+        - host: aareg-services-q1.dev-fss-pub.nais.io
   env:
     - name: KAFKA_CLIENT_ID
       value: narmesteleder-arbeidsforhold
-    - name: SECURITYTOKENSERVICE_URL
-      value: https://api-gw-q1.oera.no/security-token-service/rest/v1/sts/token
-    - name: REGISTER_BASE_PATH
-      value: https://api-gw-q1.oera.no
-
+    - name: AAREG_URL
+      value: https://aareg-services-q1.dev-fss-pub.nais.io
+    - name: AAREG_SCOPE
+      value: api://dev-fss.arbeidsforhold.aareg-services-nais-q1/.default

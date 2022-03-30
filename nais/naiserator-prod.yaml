@@ -43,8 +43,6 @@ spec:
       memory: 450Mi
   vault:
     enabled: false
-  envFrom:
-    - secret: narmesteleder-arbeidsforhold-secret
   webproxy: true
   kafka:
     pool: nav-prod
@@ -52,10 +50,14 @@ spec:
     application:
       enabled: true
       tenant: nav.no
+  accessPolicy:
+    outbound:
+      external:
+        - host: aareg-services.prod-fss-pub.nais.io
   env:
     - name: KAFKA_CLIENT_ID
       value: narmesteleder-arbeidsforhold
-    - name: SECURITYTOKENSERVICE_URL
-      value: https://api-gw.oera.no/security-token-service/rest/v1/sts/token
-    - name: REGISTER_BASE_PATH
-      value: https://api-gw.oera.no
+    - name: AAREG_URL
+      value: https://aareg-services.prod-fss-pub.nais.io
+    - name: AAREG_SCOPE
+      value: api://prod-fss.arbeidsforhold.aareg-services-nais/.default

@@ -6,6 +6,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import no.nav.syfo.application.metrics.CHECKED_NL_COUNTER
 import no.nav.syfo.application.metrics.ERROR_COUNTER
+import no.nav.syfo.log
 import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.narmesteleder.db.NarmestelederDbModel
@@ -65,6 +66,7 @@ class NarmestelederArbeidsforholdUpdateService(
             val arbeidsforhold = arbeidsgiverService.getArbeidsgivere(narmesteleder.brukerFnr)
             return arbeidsforhold.any { it.orgnummer == narmesteleder.orgnummer }
         } catch (e: Exception) {
+            log.error("Noe gikk galt ved henting av arbeidsgivere", e)
             ERROR_COUNTER.labels("arbeidsforhold").inc()
             throw e
         }

@@ -89,7 +89,6 @@ dependencies {
     implementation("org.flywaydb:flyway-core:$flywayVersion")
 
     implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
-    implementation("no.nav.helse:syfosm-common-rest-sts:$smCommonVersion")
 
     testImplementation("org.testcontainers:postgresql:$testContainerVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
