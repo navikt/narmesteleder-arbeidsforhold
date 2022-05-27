@@ -3,17 +3,17 @@ package no.nav.syfo
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.apache.Apache
 import io.ktor.client.engine.apache.ApacheEngineConfig
-import io.ktor.client.features.HttpResponseValidator
-import io.ktor.client.features.json.JacksonSerializer
-import io.ktor.client.features.json.JsonFeature
+import io.ktor.client.plugins.HttpResponseValidator
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.network.sockets.SocketTimeoutException
+import io.ktor.serialization.jackson.jackson
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -56,7 +56,6 @@ fun main() {
         applicationState
     )
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
-    applicationServer.start()
 
     val kafkaConsumer = KafkaConsumer(
         KafkaUtils.getAivenKafkaConfig().also {
@@ -68,16 +67,15 @@ fun main() {
     )
 
     val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
-        install(JsonFeature) {
-            serializer = JacksonSerializer {
-                registerKotlinModule()
+        install(ContentNegotiation) {
+            jackson {
                 registerModule(JavaTimeModule())
                 configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
                 configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
         }
         HttpResponseValidator {
-            handleResponseException { exception ->
+            handleResponseExceptionWithRequest { exception, _ ->
                 when (exception) {
                     is SocketTimeoutException -> throw ServiceUnavailableException(exception.message)
                 }
@@ -115,13 +113,13 @@ fun main() {
     )
     val narmestelederService = NarmestelederService(kafkaConsumer, narmesteLederDb, applicationState, env.narmestelederLeesahTopic, narmestelederArbeidsforholdUpdateService)
 
-    applicationState.ready = true
-
     startBackgroundJob(applicationState) {
         narmestelederService.start()
     }
+    applicationServer.start()
 }
 
+@OptIn(DelicateCoroutinesApi::class)
 fun startBackgroundJob(applicationState: ApplicationState, block: suspend CoroutineScope.() -> Unit) {
     GlobalScope.launch(Dispatchers.Unbounded) {
         try {
