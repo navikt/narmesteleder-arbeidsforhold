@@ -6,34 +6,32 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.6.0"
-val jacksonVersion = "2.13.2"
-val jacksonPatchVersion = "2.13.2.1"
-val jacksonBomVersion = "2.13.2.20220324"
+val jacksonVersion = "2.13.3"
 val kluentVersion = "1.68"
-val ktorVersion = "1.6.8"
+val ktorVersion = "2.0.1"
 val logbackVersion = "1.2.11"
-val logstashEncoderVersion = "7.0.1"
+val logstashEncoderVersion = "7.1.1"
 val prometheusVersion = "0.15.0"
 val spekVersion = "2.0.18"
-val smCommonVersion = "1.a92720c"
-val mockkVersion = "1.12.3"
-val nimbusdsVersion = "9.21"
-val testContainerKafkaVersion = "1.16.3"
-val postgresVersion = "42.3.3"
-val flywayVersion = "8.5.4"
+val smCommonVersion = "1.f132f2b"
+val mockkVersion = "1.12.4"
+val nimbusdsVersion = "9.22"
+val testContainerKafkaVersion = "1.17.1"
+val postgresVersion = "42.3.4"
+val flywayVersion = "8.5.10"
 val hikariVersion = "5.0.1"
-val testContainerVersion = "1.16.3"
-val kotlinVersion = "1.6.0"
+val testContainerVersion = "1.17.1"
+val kotlinVersion = "1.6.21"
 
 tasks.withType<Jar> {
     manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
 }
 
 plugins {
-    id("org.jmailen.kotlinter") version "3.6.0"
-    kotlin("jvm") version "1.6.0"
-    id("com.diffplug.spotless") version "5.16.0"
-    id("com.github.johnrengelman.shadow") version "7.0.0"
+    id("org.jmailen.kotlinter") version "3.10.0"
+    kotlin("jvm") version "1.6.21"
+    id("com.diffplug.spotless") version "6.5.0"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
     jacoco
 }
 
@@ -61,18 +59,19 @@ repositories {
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:$coroutinesVersion")
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
 
+    implementation("io.ktor:ktor-server-core:$ktorVersion")
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
+    implementation("io.ktor:ktor-server-call-id:$ktorVersion")
+
+    implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
-    implementation("io.ktor:ktor-client-cio:$ktorVersion")
-    implementation("io.ktor:ktor-client-auth-basic:$ktorVersion")
-    implementation("io.ktor:ktor-client-jackson:$ktorVersion")
-    implementation("io.ktor:ktor-jackson:$ktorVersion")
-    implementation("io.ktor:ktor-auth:$ktorVersion")
-    implementation("io.ktor:ktor-auth-jwt:$ktorVersion")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
@@ -81,8 +80,6 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
-    implementation ("com.fasterxml.jackson.core:jackson-databind:$jacksonPatchVersion")
-    implementation ("com.fasterxml.jackson:jackson-bom:$jacksonBomVersion")
 
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")
