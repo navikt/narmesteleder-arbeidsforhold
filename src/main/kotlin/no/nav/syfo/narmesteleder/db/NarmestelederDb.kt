@@ -47,14 +47,14 @@ class NarmestelederDb(private val database: DatabaseInterface) {
         }
     }
 
-    fun remove(narmesteleder: NarmestelederLeesahKafkaMessage) {
+    fun remove(narmesteLederId: UUID) {
         database.connection.use { connection ->
             connection.prepareStatement(
                 """
                delete from narmesteleder where narmeste_leder_id = ?;
             """
             ).use { ps ->
-                ps.setString(1, narmesteleder.narmesteLederId.toString())
+                ps.setString(1, narmesteLederId.toString())
                 ps.executeUpdate()
             }
             connection.commit()

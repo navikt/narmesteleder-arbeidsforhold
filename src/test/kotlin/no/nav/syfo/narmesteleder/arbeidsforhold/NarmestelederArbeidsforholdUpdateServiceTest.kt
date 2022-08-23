@@ -26,7 +26,8 @@ class NarmestelederArbeidsforholdUpdateServiceTest : FunSpec({
     val narmestelederArbeidsforholdUpdateService = NarmestelederArbeidsforholdUpdateService(
         database,
         arbeidsgiverService,
-        narmestelederKafkaProducer
+        narmestelederKafkaProducer,
+        "prod-gcp"
     )
 
     val narmesteleder = NarmestelederLeesahKafkaMessage(

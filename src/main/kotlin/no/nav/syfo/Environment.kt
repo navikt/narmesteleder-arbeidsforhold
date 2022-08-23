@@ -14,7 +14,8 @@ data class Environment(
     val clientSecret: String = getEnvVar("AZURE_APP_CLIENT_SECRET"),
     val aaregUrl: String = getEnvVar("AAREG_URL"),
     val aaregScope: String = getEnvVar("AAREG_SCOPE"),
-    val narmestelederTopic: String = "teamsykmelding.syfo-narmesteleder"
+    val narmestelederTopic: String = "teamsykmelding.syfo-narmesteleder",
+    val cluster: String = getEnvVar("NAIS_CLUSTER_NAME")
 ) {
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$dbHost:$dbPort/$dbName"
