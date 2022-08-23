@@ -36,7 +36,7 @@ class NarmestelederService(
                 NL_TOPIC_COUNTER.labels("ny").inc()
             }
             else -> {
-                narmestelederDb.remove(narmesteleder)
+                narmestelederDb.remove(narmesteleder.narmesteLederId)
                 NL_TOPIC_COUNTER.labels("avbrutt").inc()
             }
         }

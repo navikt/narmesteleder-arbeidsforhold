@@ -109,7 +109,8 @@ fun main() {
     val narmestelederArbeidsforholdUpdateService = NarmestelederArbeidsforholdUpdateService(
         narmestelederDb = narmesteLederDb,
         arbeidsgiverService = arbeidsgiverService,
-        narmestelederKafkaProducer = narmestelederKafkaProducer
+        narmestelederKafkaProducer = narmestelederKafkaProducer,
+        cluster = env.cluster
     )
     val narmestelederService = NarmestelederService(kafkaConsumer, narmesteLederDb, applicationState, env.narmestelederLeesahTopic, narmestelederArbeidsforholdUpdateService)
 

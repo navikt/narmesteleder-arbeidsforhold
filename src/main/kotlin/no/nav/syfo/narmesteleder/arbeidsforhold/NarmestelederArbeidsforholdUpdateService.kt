@@ -20,6 +20,7 @@ class NarmestelederArbeidsforholdUpdateService(
     private val narmestelederDb: NarmestelederDb,
     private val arbeidsgiverService: ArbeidsgiverService,
     private val narmestelederKafkaProducer: NarmestelederKafkaProducer,
+    private val cluster: String
 ) {
 
     suspend fun updateNarmesteledere() {
@@ -41,7 +42,7 @@ class NarmestelederArbeidsforholdUpdateService(
 
     private suspend fun checkNarmesteleder(
         it: List<NarmestelederDbModel>
-    ) = it.map {
+    ) = it.mapNotNull {
         try {
             val checkedNarmesteleder = CheckedNarmesteleder(it, checkNl(it), failed = false)
             when (checkedNarmesteleder.valid) {
@@ -56,8 +57,14 @@ class NarmestelederArbeidsforholdUpdateService(
                 }
             }
         } catch (ex: Exception) {
-            CHECKED_NL_COUNTER.labels("failed").inc()
-            CheckedNarmesteleder(it, true, failed = true)
+            if (cluster == "dev-gcp") {
+                log.warn("Sletter nl-kobling fordi oppslag feilet og dette er dev")
+                narmestelederDb.remove(it.narmestelederId)
+                null
+            } else {
+                CHECKED_NL_COUNTER.labels("failed").inc()
+                CheckedNarmesteleder(it, true, failed = true)
+            }
         }
     }
 
