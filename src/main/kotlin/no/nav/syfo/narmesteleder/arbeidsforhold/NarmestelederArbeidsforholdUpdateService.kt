@@ -73,7 +73,7 @@ class NarmestelederArbeidsforholdUpdateService(
             val arbeidsforhold = arbeidsgiverService.getArbeidsgivere(narmesteleder.brukerFnr)
             return arbeidsforhold.any { it.orgnummer == narmesteleder.orgnummer }
         } catch (e: Exception) {
-            log.error("Noe gikk galt ved henting av arbeidsgivere", e)
+            log.error("Noe gikk galt ved henting av arbeidsgivere for narmestelederId ${narmesteleder.narmestelederId}: ${e.message}", e)
             ERROR_COUNTER.labels("arbeidsforhold").inc()
             throw e
         }
