@@ -55,8 +55,6 @@ spec:
       external:
         - host: aareg-services.prod-fss-pub.nais.io
   env:
-    - name: KAFKA_CLIENT_ID
-      value: narmesteleder-arbeidsforhold
     - name: AAREG_URL
       value: https://aareg-services.prod-fss-pub.nais.io
     - name: AAREG_SCOPE

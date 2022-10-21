@@ -6,22 +6,23 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.6.4"
-val jacksonVersion = "2.13.4"
-val kluentVersion = "1.68"
-val ktorVersion = "2.1.1"
-val logbackVersion = "1.4.0"
+val jacksonVersion = "2.14.0-rc2"
+val kluentVersion = "1.70"
+val ktorVersion = "2.1.2"
+val logbackVersion = "1.4.4"
 val logstashEncoderVersion = "7.2"
 val prometheusVersion = "0.16.0"
-val kotestVersion = "5.4.2"
+val kotestVersion = "5.5.1"
 val smCommonVersion = "1.ea531b3"
-val mockkVersion = "1.12.8"
-val nimbusdsVersion = "9.24.4"
-val testContainerKafkaVersion = "1.17.3"
+val mockkVersion = "1.13.2"
+val nimbusdsVersion = "9.25.6"
+val testContainerKafkaVersion = "1.17.4"
 val postgresVersion = "42.5.0"
 val flywayVersion = "9.3.0"
 val hikariVersion = "5.0.1"
-val testContainerVersion = "1.17.3"
-val kotlinVersion = "1.7.10"
+val testContainerVersion = "1.17.4"
+val kotlinVersion = "1.7.20"
+val commonsCodecVersion = "1.15"
 
 tasks.withType<Jar> {
     manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
@@ -29,7 +30,7 @@ tasks.withType<Jar> {
 
 plugins {
     id("org.jmailen.kotlinter") version "3.10.0"
-    kotlin("jvm") version "1.7.10"
+    kotlin("jvm") version "1.7.20"
     id("com.diffplug.spotless") version "6.5.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
@@ -70,7 +71,12 @@ dependencies {
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-    implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-jackson:$ktorVersion") {
+        exclude(group = "com.fasterxml.woodstox", module = "woodstox-core")
+    }
+
+    implementation("commons-codec:commons-codec:$commonsCodecVersion")
+    // override transient version 1.10 from io.ktor:ktor-client-apache
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
@@ -110,9 +116,9 @@ tasks {
 
     withType<JacocoReport> {
         classDirectories.setFrom(
-                sourceSets.main.get().output.asFileTree.matching {
-                    exclude()
-                }
+            sourceSets.main.get().output.asFileTree.matching {
+                exclude()
+            }
         )
 
     }
