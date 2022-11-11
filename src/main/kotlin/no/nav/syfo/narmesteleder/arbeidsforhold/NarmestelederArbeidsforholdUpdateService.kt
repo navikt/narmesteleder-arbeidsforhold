@@ -1,5 +1,6 @@
 package no.nav.syfo.narmesteleder.arbeidsforhold
 
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -23,6 +24,7 @@ class NarmestelederArbeidsforholdUpdateService(
     private val cluster: String
 ) {
 
+    @OptIn(DelicateCoroutinesApi::class)
     suspend fun updateNarmesteledere() {
         narmestelederDb.use {
             val lastUpdateLimit = OffsetDateTime.now(ZoneOffset.UTC).minusMonths(1)
