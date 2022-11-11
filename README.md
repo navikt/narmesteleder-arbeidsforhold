@@ -13,7 +13,10 @@ This project contains the application code and infrastructure for narmesteleder-
 
 ## Getting started
 ### Getting github-package-registry packages NAV-IT
-Some packages used in this repo is uploaded to the GitHub Package Registry which requires authentication. It can, for example, be solved like this in Gradle:
+Some packages used in this repo is uploaded to the GitHub Package Registry which requires authentication. 
+We have 3 ways this can be solved:
+
+1. It can, for example, be solved like this in Gradle:
 ```
 val githubUser: String by project
 val githubPassword: String by project
@@ -36,13 +39,15 @@ githubPassword=[token]
 ```
 
 Replace `[token]` with a personal access token with scope `read:packages`.
+See githubs guide [creating-a-personal-access-token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) on
+how to create a personal access token.
 
-Alternatively, the variables can be configured via environment variables:
+2. The variables can be configured as environment variables like this:
 
 * `ORG_GRADLE_PROJECT_githubUser`
 * `ORG_GRADLE_PROJECT_githubPassword`
 
-or the command line:
+3. The variables can be configured in command line arguments:
 
 ```
 ./gradlew -PgithubUser=x-access-token -PgithubPassword=[token]
@@ -50,20 +55,34 @@ or the command line:
 
 ### Building the application
 #### Compile and package application
-To build locally and run the integration tests you can simply run `./gradlew shadowJar` or  on windows 
-`gradlew.bat shadowJar`
+To build locally and run the integration tests you can simply run 
+
+``` bash
+./gradlew shadowJar
+``` 
+or on Windows
+``` bash
+gradlew.bat shadowJar
+``` 
 
 #### Creating a docker image
-Creating a docker image should be as simple as `docker build -t narmesteleder-arbeidsforhold .`
+Creating a docker image should be as simple as 
+``` bash 
+docker build -t narmesteleder-arbeidsforhold .
+```
 
 #### Running a docker image
-`docker run --rm -it -p 8080:8080 narmesteleder-arbeidsforhold`
+``` bash 
+docker run --rm -it -p 8080:8080 narmesteleder-arbeidsforhold
+```
 
 ### Upgrading the gradle wrapper
 
 Find the newest version of gradle here: https://gradle.org/releases/ Then run this command:
 
-```./gradlew wrapper --gradle-version $gradleVersjon```
+``` bash 
+./gradlew wrapper --gradle-version $gradleVersjon
+```
 
 ### Contact
 

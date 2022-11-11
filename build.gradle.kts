@@ -6,13 +6,13 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.6.4"
-val jacksonVersion = "2.14.0-rc2"
-val kluentVersion = "1.70"
-val ktorVersion = "2.1.2"
+val jacksonVersion = "2.14.0"
+val kluentVersion = "1.72"
+val ktorVersion = "2.1.3"
 val logbackVersion = "1.4.4"
 val logstashEncoderVersion = "7.2"
 val prometheusVersion = "0.16.0"
-val kotestVersion = "5.5.1"
+val kotestVersion = "5.5.4"
 val smCommonVersion = "1.ea531b3"
 val mockkVersion = "1.13.2"
 val nimbusdsVersion = "9.25.6"
@@ -21,7 +21,7 @@ val postgresVersion = "42.5.0"
 val flywayVersion = "9.3.0"
 val hikariVersion = "5.0.1"
 val testContainerVersion = "1.17.4"
-val kotlinVersion = "1.7.20"
+val kotlinVersion = "1.7.21"
 val commonsCodecVersion = "1.15"
 
 tasks.withType<Jar> {
@@ -30,7 +30,7 @@ tasks.withType<Jar> {
 
 plugins {
     id("org.jmailen.kotlinter") version "3.10.0"
-    kotlin("jvm") version "1.7.20"
+    kotlin("jvm") version "1.7.21"
     id("com.diffplug.spotless") version "6.5.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
@@ -132,7 +132,11 @@ tasks {
     withType<Test> {
         useJUnitPlatform {
         }
-        testLogging.showStandardStreams = true
+        testLogging {
+            events("skipped", "failed")
+            showStackTraces = true
+            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        }
     }
 
     "check" {
