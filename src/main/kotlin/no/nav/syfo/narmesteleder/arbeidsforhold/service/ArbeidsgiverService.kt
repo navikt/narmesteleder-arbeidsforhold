@@ -16,7 +16,7 @@ class ArbeidsgiverService(
         val arbeidsgivere = arbeidsforholdClient.getArbeidsforhold(
             fnr = fnr,
             ansettelsesperiodeFom = ansettelsesperiodeFom,
-            token = "Bearer ${accessTokenClient.getAccessToken(scope)}",
+            token = "Bearer ${accessTokenClient.getAccessToken(scope)}"
         )
 
         if (arbeidsgivere.isEmpty()) {
