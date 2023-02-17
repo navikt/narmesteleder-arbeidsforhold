@@ -5,6 +5,7 @@ This project contains the application code and infrastructure for narmesteleder-
 * Kotlin
 * Ktor
 * Gradle
+* Kotest
 
 #### Requirements
 
