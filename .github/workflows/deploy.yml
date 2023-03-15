@@ -3,8 +3,6 @@ on:
   push:
     branches:
       - master
-env:
-  IMAGE: ghcr.io/${{ github.repository }}/narmesteleder-arbeidsforhold:${{ github.sha }}
 
 jobs:
   monitor:
@@ -36,6 +34,9 @@ jobs:
           command: test
           args: --org=teamsykmelding --severity-threshold=high
   build:
+    permissions:
+      contents: "read"
+      id-token: "write"
     name: Checkout code and create docker tag
     runs-on: ubuntu-latest
     steps:
@@ -69,13 +70,16 @@ jobs:
           ORG_GRADLE_PROJECT_githubPassword: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./gradlew shadowJar -x test
-      - name: Build and publish Docker image
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          docker build --tag ${IMAGE} .
-          docker login ghcr.io -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
-          docker push ${IMAGE}
+      - name: docker-build-push
+        uses: nais/docker-build-push@v0
+        id: docker-build-push
+        with:
+          team: teamsykmelding
+          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
+          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
+
+    outputs:
+      image: ${{ steps.docker-build-push.outputs.image }}
   deploy-dev:
     name: Deploy to dev
     needs: [ snyk-test, build ]
@@ -87,7 +91,7 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
           RESOURCE: nais/naiserator-dev.yaml
-
+          VAR: image=${{ needs.build.outputs.image }}
   deploy-prod:
     name: Deploy to prod
     needs: [ snyk-test, build ]
@@ -99,3 +103,4 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-gcp
           RESOURCE: nais/naiserator-prod.yaml
+          VAR: image=${{ needs.build.outputs.image }}
