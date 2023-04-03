@@ -54,6 +54,8 @@ spec:
     outbound:
       external:
         - host: aareg-services-q1.dev-fss-pub.nais.io
+  secureLogs:
+    enabled: true
   env:
     - name: AAREG_URL
       value: https://aareg-services-q1.dev-fss-pub.nais.io
