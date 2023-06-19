@@ -1,5 +1,6 @@
 package no.nav.syfo.narmesteleder
 
+import java.time.Duration
 import kotlinx.coroutines.delay
 import no.nav.syfo.application.ApplicationState
 import no.nav.syfo.application.metrics.NL_TOPIC_COUNTER
@@ -8,7 +9,6 @@ import no.nav.syfo.narmesteleder.arbeidsforhold.NarmestelederArbeidsforholdUpdat
 import no.nav.syfo.narmesteleder.db.NarmestelederDb
 import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
 import org.apache.kafka.clients.consumer.KafkaConsumer
-import java.time.Duration
 
 class NarmestelederService(
     private val kafkaConsumer: KafkaConsumer<String, NarmestelederLeesahKafkaMessage>,
@@ -23,9 +23,7 @@ class NarmestelederService(
         kafkaConsumer.subscribe(listOf(narmestelederLeesahTopic))
         while (applicationState.ready) {
             narmestelederArbeidsforholdUpdateService.updateNarmesteledere()
-            kafkaConsumer.poll(Duration.ofMillis(10_000)).forEach {
-                updateNl(it.value())
-            }
+            kafkaConsumer.poll(Duration.ofMillis(10_000)).forEach { updateNl(it.value()) }
         }
     }
 

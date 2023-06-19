@@ -54,20 +54,20 @@ fun main() {
     val env = Environment()
     DefaultExports.initialize()
     val applicationState = ApplicationState()
-    val applicationEngine = createApplicationEngine(
-        env,
-        applicationState
-    )
+    val applicationEngine = createApplicationEngine(env, applicationState)
     val applicationServer = ApplicationServer(applicationEngine, applicationState)
 
-    val kafkaConsumer = KafkaConsumer(
-        KafkaUtils.getAivenKafkaConfig().also {
-            it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "100"
-            it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
-        }.toConsumerConfig("narmesteleder-arbeidsforhold", JacksonKafkaDeserializer::class),
-        StringDeserializer(),
-        JacksonKafkaDeserializer(NarmestelederLeesahKafkaMessage::class)
-    )
+    val kafkaConsumer =
+        KafkaConsumer(
+            KafkaUtils.getAivenKafkaConfig()
+                .also {
+                    it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "100"
+                    it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
+                }
+                .toConsumerConfig("narmesteleder-arbeidsforhold", JacksonKafkaDeserializer::class),
+            StringDeserializer(),
+            JacksonKafkaDeserializer(NarmestelederLeesahKafkaMessage::class)
+        )
 
     val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
         install(ContentNegotiation) {
@@ -80,7 +80,8 @@ fun main() {
         HttpResponseValidator {
             handleResponseExceptionWithRequest { exception, _ ->
                 when (exception) {
-                    is SocketTimeoutException -> throw ServiceUnavailableException(exception.message)
+                    is SocketTimeoutException ->
+                        throw ServiceUnavailableException(exception.message)
                 }
             }
         }
@@ -92,7 +93,9 @@ fun main() {
             }
             retryIf(maxRetries) { request, response ->
                 if (response.status.value.let { it in 500..599 }) {
-                    log.warn("Retrying for statuscode ${response.status.value}, for url ${request.url}")
+                    log.warn(
+                        "Retrying for statuscode ${response.status.value}, for url ${request.url}"
+                    )
                     true
                 } else {
                     false
@@ -109,42 +112,55 @@ fun main() {
 
     val database = Database(env, applicationState)
     val narmesteLederDb = NarmestelederDb(database)
-    val accessTokenClient = AccessTokenClient(env.aadAccessTokenUrl, env.clientId, env.clientSecret, httpClient)
+    val accessTokenClient =
+        AccessTokenClient(env.aadAccessTokenUrl, env.clientId, env.clientSecret, httpClient)
 
-    val arbeidsforholdClient = ArbeidsforholdClient(
-        httpClient = httpClient,
-        url = env.aaregUrl
-    )
-    val arbeidsgiverService = ArbeidsgiverService(
-        arbeidsforholdClient = arbeidsforholdClient,
-        accessTokenClient = accessTokenClient,
-        scope = env.aaregScope
-    )
-
-    val narmestelederKafkaProducer = NarmestelederKafkaProducer(
-        env.narmestelederTopic,
-        KafkaProducer(
-            KafkaUtils.getAivenKafkaConfig()
-                .toProducerConfig("narmesteleder-arbeidsforhold-producer", JacksonKafkaSerializer::class, StringSerializer::class)
+    val arbeidsforholdClient = ArbeidsforholdClient(httpClient = httpClient, url = env.aaregUrl)
+    val arbeidsgiverService =
+        ArbeidsgiverService(
+            arbeidsforholdClient = arbeidsforholdClient,
+            accessTokenClient = accessTokenClient,
+            scope = env.aaregScope
         )
-    )
 
-    val narmestelederArbeidsforholdUpdateService = NarmestelederArbeidsforholdUpdateService(
-        narmestelederDb = narmesteLederDb,
-        arbeidsgiverService = arbeidsgiverService,
-        narmestelederKafkaProducer = narmestelederKafkaProducer,
-        cluster = env.cluster
-    )
-    val narmestelederService = NarmestelederService(kafkaConsumer, narmesteLederDb, applicationState, env.narmestelederLeesahTopic, narmestelederArbeidsforholdUpdateService)
+    val narmestelederKafkaProducer =
+        NarmestelederKafkaProducer(
+            env.narmestelederTopic,
+            KafkaProducer(
+                KafkaUtils.getAivenKafkaConfig()
+                    .toProducerConfig(
+                        "narmesteleder-arbeidsforhold-producer",
+                        JacksonKafkaSerializer::class,
+                        StringSerializer::class
+                    )
+            )
+        )
 
-    startBackgroundJob(applicationState) {
-        narmestelederService.start()
-    }
+    val narmestelederArbeidsforholdUpdateService =
+        NarmestelederArbeidsforholdUpdateService(
+            narmestelederDb = narmesteLederDb,
+            arbeidsgiverService = arbeidsgiverService,
+            narmestelederKafkaProducer = narmestelederKafkaProducer,
+            cluster = env.cluster
+        )
+    val narmestelederService =
+        NarmestelederService(
+            kafkaConsumer,
+            narmesteLederDb,
+            applicationState,
+            env.narmestelederLeesahTopic,
+            narmestelederArbeidsforholdUpdateService
+        )
+
+    startBackgroundJob(applicationState) { narmestelederService.start() }
     applicationServer.start()
 }
 
 @OptIn(DelicateCoroutinesApi::class)
-fun startBackgroundJob(applicationState: ApplicationState, block: suspend CoroutineScope.() -> Unit) {
+fun startBackgroundJob(
+    applicationState: ApplicationState,
+    block: suspend CoroutineScope.() -> Unit
+) {
     GlobalScope.launch(Dispatchers.Unbounded) {
         try {
             block()

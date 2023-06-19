@@ -17,11 +17,11 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
 import io.ktor.server.routing.routing
+import java.util.UUID
 import no.nav.syfo.Environment
 import no.nav.syfo.application.api.registerNaisApi
 import no.nav.syfo.application.metrics.monitorHttpRequests
 import no.nav.syfo.log
-import java.util.UUID
 
 fun createApplicationEngine(
     env: Environment,
@@ -48,8 +48,6 @@ fun createApplicationEngine(
             }
         }
 
-        routing {
-            registerNaisApi(applicationState)
-        }
+        routing { registerNaisApi(applicationState) }
         intercept(ApplicationCallPipeline.Monitoring, monitorHttpRequests())
     }
