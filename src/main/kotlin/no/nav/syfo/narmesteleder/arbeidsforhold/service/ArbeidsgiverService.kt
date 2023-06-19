@@ -18,6 +18,7 @@ class ArbeidsgiverService(
 ) {
     suspend fun getArbeidsgivere(fnr: String): List<Arbeidsgiverinfo> {
         val ansettelsesperiodeFom = LocalDate.now().minusMonths(4)
+        securelog.info("Getting employers for fnr $fnr")
         val arbeidsgivere =
             arbeidsforholdClient.getArbeidsforhold(
                 fnr = fnr,
