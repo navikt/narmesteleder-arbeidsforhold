@@ -21,7 +21,7 @@ val postgresVersion = "42.6.0"
 val flywayVersion = "9.21.2"
 val hikariVersion = "5.0.1"
 val testContainerVersion = "1.19.0"
-val kotlinVersion = "1.9.0"
+val kotlinVersion = "1.9.10"
 val commonsCodecVersion = "1.16.0"
 val ktfmtVersion = "0.44"
 
@@ -30,7 +30,7 @@ tasks.withType<Jar> {
 }
 
 plugins {
-    kotlin("jvm") version "1.9.0"
+    kotlin("jvm") version "1.9.10"
     id("com.diffplug.spotless") version "6.20.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.cyclonedx.bom") version "1.7.4"
