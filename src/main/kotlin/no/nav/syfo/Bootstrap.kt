@@ -59,7 +59,7 @@ fun main() {
 
     val kafkaConsumer =
         KafkaConsumer(
-            KafkaUtils.getAivenKafkaConfig()
+            KafkaUtils.getAivenKafkaConfig("narmesteleder-leder-consumer")
                 .also {
                     it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "100"
                     it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
@@ -127,7 +127,7 @@ fun main() {
         NarmestelederKafkaProducer(
             env.narmestelederTopic,
             KafkaProducer(
-                KafkaUtils.getAivenKafkaConfig()
+                KafkaUtils.getAivenKafkaConfig("narmesteleder-leder-producer")
                     .toProducerConfig(
                         "narmesteleder-arbeidsforhold-producer",
                         JacksonKafkaSerializer::class,

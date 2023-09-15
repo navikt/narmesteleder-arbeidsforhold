@@ -1,7 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import com.github.jengelman.gradle.plugins.shadow.transformers.ServiceFileTransformer
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 group = "no.nav.syfo"
 version = "1.0.0"
 
@@ -13,7 +9,7 @@ val logbackVersion = "1.4.11"
 val logstashEncoderVersion = "7.4"
 val prometheusVersion = "0.16.0"
 val kotestVersion = "5.7.2"
-val smCommonVersion = "1.0.1"
+val smCommonVersion = "1.0.19"
 val mockkVersion = "1.13.7"
 val nimbusdsVersion = "9.34"
 val testContainerKafkaVersion = "1.19.0"
@@ -25,20 +21,16 @@ val kotlinVersion = "1.9.10"
 val commonsCodecVersion = "1.16.0"
 val ktfmtVersion = "0.44"
 
-tasks.withType<Jar> {
-    manifest.attributes["Main-Class"] = "no.nav.syfo.BootstrapKt"
-}
 
 plugins {
+    id("application")
     kotlin("jvm") version "1.9.10"
     id("com.diffplug.spotless") version "6.21.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("org.cyclonedx.bom") version "1.7.4"
 }
 
-buildscript {
-    dependencies {
-    }
+application {
+    mainClass.set("no.nav.syfo.BootstrapKt")
 }
 
 val githubUser: String by project
@@ -107,37 +99,22 @@ dependencies {
 
 tasks {
 
-    create("printVersion") {
-        println(project.version)
-    }
-
-    withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "17"
-    }
-
-    withType<JacocoReport> {
-        classDirectories.setFrom(
-            sourceSets.main.get().output.asFileTree.matching {
-                exclude()
-            }
-        )
-
-    }
-    withType<ShadowJar> {
-        transform(ServiceFileTransformer::class.java) {
-            setPath("META-INF/cxf")
-            include("bus-extensions.txt")
+    shadowJar {
+        archiveBaseName.set("app")
+        archiveClassifier.set("")
+        isZip64 = true
+        manifest {
+            attributes(
+                mapOf(
+                    "Main-Class" to "no.nav.syfo.BootstrapKt",
+                ),
+            )
         }
     }
 
-    withType<Test> {
-        useJUnitPlatform {
-        }
-        testLogging {
-            events("skipped", "failed")
-            showStackTraces = true
-            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-        }
+    test {
+        useJUnitPlatform {}
+        testLogging.showStandardStreams = true
     }
 
     spotless {
