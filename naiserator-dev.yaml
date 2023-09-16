@@ -36,14 +36,10 @@ spec:
     path: /prometheus
   resources:
     limits:
-      cpu: 100m
       memory: 500Mi
     requests:
       cpu: 40m
       memory: 450Mi
-  vault:
-    enabled: false
-  webproxy: true
   kafka:
     pool: nav-dev
   azure:
