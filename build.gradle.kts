@@ -9,7 +9,7 @@ val logbackVersion = "1.4.11"
 val logstashEncoderVersion = "7.4"
 val prometheusVersion = "0.16.0"
 val kotestVersion = "5.7.2"
-val smCommonVersion = "1.0.19"
+val smCommonVersion = "2.0.0"
 val mockkVersion = "1.13.7"
 val nimbusdsVersion = "9.35"
 val testContainerKafkaVersion = "1.19.0"
@@ -33,18 +33,11 @@ application {
     mainClass.set("no.nav.syfo.BootstrapKt")
 }
 
-val githubUser: String by project
-val githubPassword: String by project
-
 repositories {
     mavenCentral()
     maven(url = "https://packages.confluent.io/maven/")
     maven {
-        url = uri("https://maven.pkg.github.com/navikt/syfosm-common")
-        credentials {
-            username = githubUser
-            password = githubPassword
-        }
+        url = uri("https://github-package-registry-mirror.gc.nav.no/cached/maven-release")
     }
 }
 
@@ -68,8 +61,11 @@ dependencies {
         exclude(group = "com.fasterxml.woodstox", module = "woodstox-core")
     }
 
-    implementation("commons-codec:commons-codec:$commonsCodecVersion")
-    // override transient version 1.10 from io.ktor:ktor-client-apache
+    constraints {
+        implementation("commons-codec:commons-codec:$commonsCodecVersion") {
+            because("override transient from io.ktor:ktor-client-apache")
+        }
+    }
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
@@ -114,7 +110,11 @@ tasks {
 
     test {
         useJUnitPlatform {}
-        testLogging.showStandardStreams = true
+        testLogging {
+            events("skipped", "failed")
+            showStackTraces = true
+            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        }
     }
 
     spotless {
