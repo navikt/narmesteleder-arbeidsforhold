@@ -18,7 +18,7 @@ val flywayVersion = "10.11.1"
 val hikariVersion = "5.1.0"
 val testContainerVersion = "1.19.7"
 val kotlinVersion = "1.9.23"
-val commonsCodecVersion = "1.16.1"
+val commonsCodecVersion = "1.17.0"
 val ktfmtVersion = "0.44"
 val snappyJavaVersion = "1.1.10.5"
 
