@@ -2,7 +2,7 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.6.4"
-val jacksonVersion = "2.17.0"
+val jacksonVersion = "2.17.1"
 val kluentVersion = "1.73"
 val ktorVersion = "2.3.10"
 val logbackVersion = "1.5.6"
@@ -14,18 +14,18 @@ val mockkVersion = "1.13.10"
 val nimbusdsVersion = "9.37.3"
 val testContainerKafkaVersion = "1.19.7"
 val postgresVersion = "42.7.3"
-val flywayVersion = "10.11.1"
+val flywayVersion = "10.12.0"
 val hikariVersion = "5.1.0"
 val testContainerVersion = "1.19.7"
-val kotlinVersion = "1.9.23"
-val commonsCodecVersion = "1.16.1"
+val kotlinVersion = "1.9.24"
+val commonsCodecVersion = "1.17.0"
 val ktfmtVersion = "0.44"
 val snappyJavaVersion = "1.1.10.5"
 
 
 plugins {
     id("application")
-    kotlin("jvm") version "1.9.23"
+    kotlin("jvm") version "1.9.24"
     id("com.diffplug.spotless") version "6.25.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
