@@ -9,7 +9,7 @@ This project contains the application code and infrastructure for narmesteleder-
 
 #### Requirements
 
-* JDK 17
+* JDK 21
 * Docker
 
 ## Getting started
