@@ -19,7 +19,7 @@ val testContainerVersion = "1.20.1"
 val kotlinVersion = "2.0.10"
 val commonsCodecVersion = "1.17.1"
 val ktfmtVersion = "0.44"
-val kafkaVersion = "3.8.0"
+val kafkaVersion = "7.7.0-ce"
 val commonsCompressVersion = "1.27.0"
 
 
