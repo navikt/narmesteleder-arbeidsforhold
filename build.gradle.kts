@@ -9,7 +9,6 @@ val logbackVersion = "1.5.6"
 val logstashEncoderVersion = "8.0"
 val prometheusVersion = "0.16.0"
 val kotestVersion = "5.9.1"
-val smCommonVersion = "2.0.8"
 val mockkVersion = "1.13.12"
 val nimbusdsVersion = "9.40"
 val testContainerKafkaVersion = "1.20.1"
@@ -20,7 +19,8 @@ val testContainerVersion = "1.20.1"
 val kotlinVersion = "2.0.10"
 val commonsCodecVersion = "1.17.1"
 val ktfmtVersion = "0.44"
-val snappyJavaVersion = "1.1.10.6"
+val kafkaVersion = "3.8.0"
+val commonsCompressVersion = "1.27.0"
 
 
 plugins {
@@ -57,16 +57,16 @@ dependencies {
 
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
-    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-    implementation("io.ktor:ktor-serialization-jackson:$ktorVersion") {
-        exclude(group = "com.fasterxml.woodstox", module = "woodstox-core")
-    }
-
     constraints {
         implementation("commons-codec:commons-codec:$commonsCodecVersion") {
             because("override transient from io.ktor:ktor-client-apache")
         }
     }
+    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-jackson:$ktorVersion") {
+        exclude(group = "com.fasterxml.woodstox", module = "woodstox-core")
+    }
+
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
@@ -81,15 +81,15 @@ dependencies {
     compileOnly("org.flywaydb:flyway-core:$flywayVersion")
     implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
 
-    implementation("no.nav.helse:syfosm-common-kafka:$smCommonVersion")
-    constraints {
-        implementation("org.xerial.snappy:snappy-java:$snappyJavaVersion") {
-            because("override transient from org.apache.kafka:kafka_2.12")
-        }
-    }
-
+    implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
+    implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
 
     testImplementation("org.testcontainers:postgresql:$testContainerVersion")
+    constraints {
+        implementation("org.apache.commons:commons-compress:$commonsCompressVersion") {
+            because("Due to vulnerabilities, see CVE-2024-26308")
+        }
+    }
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
@@ -104,9 +104,9 @@ dependencies {
 tasks {
 
     shadowJar {
-mergeServiceFiles {
-     setPath("META-INF/services/org.flywaydb.core.extensibility.Plugin")
- }
+        mergeServiceFiles {
+            setPath("META-INF/services/org.flywaydb.core.extensibility.Plugin")
+        }
         archiveBaseName.set("app")
         archiveClassifier.set("")
         isZip64 = true
