@@ -15,6 +15,7 @@ spec:
         databases:
           - name: narmesteleder-arbeidsforhold
             envVarPrefix: NAIS_DATABASE
+        tier: db-custom-2-5120
   replicas:
     min: 1
     max: 1
