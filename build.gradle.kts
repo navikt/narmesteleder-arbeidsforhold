@@ -20,7 +20,7 @@ val kotlinVersion = "2.0.10"
 val commonsCodecVersion = "1.17.1"
 val ktfmtVersion = "0.44"
 val kafkaVersion = "3.8.0"
-val commonsCompressVersion = "1.27.0"
+val commonsCompressVersion = "1.27.1"
 
 
 plugins {
