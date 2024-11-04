@@ -4,11 +4,10 @@ version = "1.0.0"
 val coroutinesVersion = "1.6.4"
 val jacksonVersion = "2.18.0"
 val kluentVersion = "1.73"
-val ktorVersion = "2.3.12"
+val ktorVersion = "3.0.1"
 val logbackVersion = "1.5.8"
 val logstashEncoderVersion = "8.0"
 val prometheusVersion = "0.16.0"
-val kotestVersion = "5.9.1"
 val mockkVersion = "1.13.12"
 val nimbusdsVersion = "9.41.1"
 val testContainerKafkaVersion = "1.20.1"
@@ -21,13 +20,13 @@ val commonsCodecVersion = "1.17.1"
 val ktfmtVersion = "0.44"
 val kafkaVersion = "3.8.0"
 val commonsCompressVersion = "1.27.1"
-
+val junitJupiterVersion = "5.11.3"
 
 plugins {
     id("application")
     kotlin("jvm") version "2.0.20"
     id("com.diffplug.spotless") version "6.25.0"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("com.gradleup.shadow") version "8.3.5"
 }
 
 application {
@@ -82,7 +81,6 @@ dependencies {
     implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
 
     implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
-    implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
 
     testImplementation("org.testcontainers:postgresql:$testContainerVersion")
     constraints {
@@ -92,7 +90,10 @@ dependencies {
     }
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
-    testImplementation("io.kotest:kotest-runner-junit5:$kotestVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusdsVersion")
     testImplementation("org.testcontainers:kafka:$testContainerKafkaVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
