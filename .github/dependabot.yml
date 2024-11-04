@@ -8,8 +8,6 @@ updates:
     ignore:
       - dependency-name: "org.apache.kafka:kafka_2.12"
         update-types: [ "version-update:semver-major" ]
-      - dependency-name: "org.apache.kafka:kafka-streams"
-        update-types: [ "version-update:semver-major" ]
     groups:
       dependencies:
         patterns:

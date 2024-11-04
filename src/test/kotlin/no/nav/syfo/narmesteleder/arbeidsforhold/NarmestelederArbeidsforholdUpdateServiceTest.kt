@@ -1,6 +1,5 @@
 package no.nav.syfo.narmesteleder.arbeidsforhold
 
-import io.kotest.core.spec.style.FunSpec
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -10,6 +9,7 @@ import io.mockk.verify
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
+import kotlinx.coroutines.runBlocking
 import no.nav.syfo.TestDb
 import no.nav.syfo.narmesteleder.arbeidsforhold.model.Arbeidsgiverinfo
 import no.nav.syfo.narmesteleder.arbeidsforhold.service.ArbeidsgiverService
@@ -18,125 +18,143 @@ import no.nav.syfo.narmesteleder.db.getNarmesteledereToUpdate
 import no.nav.syfo.narmesteleder.kafka.model.NarmestelederLeesahKafkaMessage
 import no.nav.syfo.narmesteleder.kafka.producer.NarmestelederKafkaProducer
 import org.amshove.kluent.shouldBeEqualTo
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
-class NarmestelederArbeidsforholdUpdateServiceTest :
-    FunSpec({
-        val database = NarmestelederDb(TestDb.database)
-        val arbeidsgiverService = mockk<ArbeidsgiverService>()
-        val narmestelederKafkaProducer = mockk<NarmestelederKafkaProducer>(relaxed = true)
-        val narmestelederArbeidsforholdUpdateService =
-            NarmestelederArbeidsforholdUpdateService(
-                database,
-                arbeidsgiverService,
-                narmestelederKafkaProducer,
-                "prod-gcp"
-            )
+class NarmestelederArbeidsforholdUpdateServiceTest {
+    private val database = NarmestelederDb(TestDb.database)
+    private val arbeidsgiverService = mockk<ArbeidsgiverService>()
+    private val narmestelederKafkaProducer = mockk<NarmestelederKafkaProducer>(relaxed = true)
+    private val narmestelederArbeidsforholdUpdateService =
+        NarmestelederArbeidsforholdUpdateService(
+            database,
+            arbeidsgiverService,
+            narmestelederKafkaProducer,
+            "prod-gcp",
+        )
 
-        val narmesteleder =
-            NarmestelederLeesahKafkaMessage(
-                narmesteLederId = UUID.randomUUID(),
-                fnr = "1",
-                orgnummer = "1",
-                narmesteLederEpost = "test@nav.no",
-                narmesteLederFnr = "2",
-                narmesteLederTelefonnummer = "12345678",
-                aktivFom = LocalDate.of(2020, 1, 1),
-                arbeidsgiverForskutterer = null,
-                aktivTom = null,
-                timestamp = OffsetDateTime.now()
-            )
+    val narmesteleder =
+        NarmestelederLeesahKafkaMessage(
+            narmesteLederId = UUID.randomUUID(),
+            fnr = "1",
+            orgnummer = "1",
+            narmesteLederEpost = "test@nav.no",
+            narmesteLederFnr = "2",
+            narmesteLederTelefonnummer = "12345678",
+            aktivFom = LocalDate.of(2020, 1, 1),
+            arbeidsgiverForskutterer = null,
+            aktivTom = null,
+            timestamp = OffsetDateTime.now(),
+        )
 
-        beforeTest {
-            TestDb.clearAllData()
-            clearMocks(arbeidsgiverService, narmestelederKafkaProducer)
+    @BeforeEach
+    fun beforeTest() {
+        TestDb.clearAllData()
+        clearMocks(arbeidsgiverService, narmestelederKafkaProducer)
+    }
+
+    @Test
+    internal fun `Test update narmesteleder should update last_update`() {
+        database.insertOrUpdate(narmesteleder)
+
+        coEvery { arbeidsgiverService.getArbeidsgivere("1") } returns
+            listOf(Arbeidsgiverinfo("1", null))
+
+        val beforeUpdate = TestDb.getNarmesteleder().first()
+        runBlocking {
+            narmestelederArbeidsforholdUpdateService.updateNarmesteledere()
+            val afterUpdate = TestDb.getNarmesteleder().first()
+
+            afterUpdate.lastUpdated.isAfter(beforeUpdate.lastUpdated) shouldBeEqualTo true
+
+            verify(exactly = 0) { narmestelederKafkaProducer.sendNlAvbrutt(any()) }
         }
+    }
 
-        context("Test update narmesteleder") {
-            test("should update last_update") {
-                database.insertOrUpdate(narmesteleder)
+    @Test
+    internal fun `Test update narmesteleder should send avbrutt kafka melding`() {
+        database.insertOrUpdate(narmesteleder)
 
-                coEvery { arbeidsgiverService.getArbeidsgivere("1") } returns
-                    listOf(Arbeidsgiverinfo("1", null))
+        coEvery { arbeidsgiverService.getArbeidsgivere("1") } returns
+            listOf(Arbeidsgiverinfo("2", null))
 
-                val beforeUpdate = TestDb.getNarmesteleder().first()
-                narmestelederArbeidsforholdUpdateService.updateNarmesteledere()
-                val afterUpdate = TestDb.getNarmesteleder().first()
+        val beforeUpdate = TestDb.getNarmesteleder().first()
+        runBlocking {
+            narmestelederArbeidsforholdUpdateService.updateNarmesteledere()
+            val afterUpdate = TestDb.getNarmesteleder().first()
 
-                afterUpdate.lastUpdated.isAfter(beforeUpdate.lastUpdated) shouldBeEqualTo true
+            afterUpdate.lastUpdated.isAfter(beforeUpdate.lastUpdated) shouldBeEqualTo true
 
-                verify(exactly = 0) { narmestelederKafkaProducer.sendNlAvbrutt(any()) }
-            }
-            test("should send avbrutt kafka melding") {
-                database.insertOrUpdate(narmesteleder)
+            verify(exactly = 1) { narmestelederKafkaProducer.sendNlAvbrutt(any()) }
+        }
+    }
 
-                coEvery { arbeidsgiverService.getArbeidsgivere("1") } returns
-                    listOf(Arbeidsgiverinfo("2", null))
+    @Test
+    internal fun `Test update narmesteleder should not update when aareg fails`() {
+        database.insertOrUpdate(narmesteleder)
 
-                val beforeUpdate = TestDb.getNarmesteleder().first()
-                narmestelederArbeidsforholdUpdateService.updateNarmesteledere()
-                val afterUpdate = TestDb.getNarmesteleder().first()
+        coEvery { arbeidsgiverService.getArbeidsgivere("1") } throws RuntimeException("error")
 
-                afterUpdate.lastUpdated.isAfter(beforeUpdate.lastUpdated) shouldBeEqualTo true
+        val beforeUpdate = TestDb.getNarmesteleder().first()
+        runBlocking {
+            narmestelederArbeidsforholdUpdateService.updateNarmesteledere()
+            val afterUpdate = TestDb.getNarmesteleder().first()
 
-                verify(exactly = 1) { narmestelederKafkaProducer.sendNlAvbrutt(any()) }
-            }
+            afterUpdate.lastUpdated shouldBeEqualTo beforeUpdate.lastUpdated
 
-            test("should not update when aareg fails") {
-                database.insertOrUpdate(narmesteleder)
+            verify(exactly = 0) { narmestelederKafkaProducer.sendNlAvbrutt(any()) }
+        }
+    }
 
-                coEvery { arbeidsgiverService.getArbeidsgivere("1") } throws
-                    RuntimeException("error")
+    @Test
+    internal fun `Test update narmesteleder should not update when aareg fails avbrutt`() {
+        database.insertOrUpdate(narmesteleder)
 
-                val beforeUpdate = TestDb.getNarmesteleder().first()
-                narmestelederArbeidsforholdUpdateService.updateNarmesteledere()
-                val afterUpdate = TestDb.getNarmesteleder().first()
+        coEvery { arbeidsgiverService.getArbeidsgivere("1") } returns
+            listOf(Arbeidsgiverinfo("2", null))
+        every { narmestelederKafkaProducer.sendNlAvbrutt(any()) } throws RuntimeException("error")
 
-                afterUpdate.lastUpdated shouldBeEqualTo beforeUpdate.lastUpdated
+        val beforeUpdate = TestDb.getNarmesteleder().first()
+        runBlocking {
+            narmestelederArbeidsforholdUpdateService.updateNarmesteledere()
+            val afterUpdate = TestDb.getNarmesteleder().first()
 
-                verify(exactly = 0) { narmestelederKafkaProducer.sendNlAvbrutt(any()) }
-            }
-            test("should not update when aareg fails") {
-                database.insertOrUpdate(narmesteleder)
+            afterUpdate.lastUpdated shouldBeEqualTo beforeUpdate.lastUpdated
 
-                coEvery { arbeidsgiverService.getArbeidsgivere("1") } returns
-                    listOf(Arbeidsgiverinfo("2", null))
-                every { narmestelederKafkaProducer.sendNlAvbrutt(any()) } throws
-                    RuntimeException("error")
+            verify(exactly = 1) { narmestelederKafkaProducer.sendNlAvbrutt(any()) }
+        }
+    }
 
-                val beforeUpdate = TestDb.getNarmesteleder().first()
-                narmestelederArbeidsforholdUpdateService.updateNarmesteledere()
-                val afterUpdate = TestDb.getNarmesteleder().first()
+    @Test
+    internal fun `Test update narmesteleder Should not update recently updated`() {
+        database.insertOrUpdate(narmesteleder.copy(aktivFom = LocalDate.now().minusDays(1)))
 
-                afterUpdate.lastUpdated shouldBeEqualTo beforeUpdate.lastUpdated
+        val beforeUpdate = TestDb.getNarmesteleder().first()
+        runBlocking {
+            narmestelederArbeidsforholdUpdateService.updateNarmesteledere()
+            val afterUpdate = TestDb.getNarmesteleder().first()
 
-                verify(exactly = 1) { narmestelederKafkaProducer.sendNlAvbrutt(any()) }
-            }
+            afterUpdate.lastUpdated shouldBeEqualTo beforeUpdate.lastUpdated
 
-            test("Should not update recently updated") {
-                database.insertOrUpdate(narmesteleder.copy(aktivFom = LocalDate.now().minusDays(1)))
+            coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any()) }
+            verify(exactly = 0) { narmestelederKafkaProducer.sendNlAvbrutt(any()) }
+        }
+    }
 
-                val beforeUpdate = TestDb.getNarmesteleder().first()
-                narmestelederArbeidsforholdUpdateService.updateNarmesteledere()
-                val afterUpdate = TestDb.getNarmesteleder().first()
+    @Test
+    internal fun `Test update narmesteleder Test batch update`() {
+        (0 until 100).forEach {
+            database.insertOrUpdate(narmesteleder.copy(narmesteLederId = UUID.randomUUID()))
+        }
+        coEvery { arbeidsgiverService.getArbeidsgivere("1") } returns
+            listOf(Arbeidsgiverinfo("1", null))
 
-                afterUpdate.lastUpdated shouldBeEqualTo beforeUpdate.lastUpdated
-
-                coVerify(exactly = 0) { arbeidsgiverService.getArbeidsgivere(any()) }
-                verify(exactly = 0) { narmestelederKafkaProducer.sendNlAvbrutt(any()) }
-            }
-
-            test("Test batch update") {
-                (0 until 100).forEach {
-                    database.insertOrUpdate(narmesteleder.copy(narmesteLederId = UUID.randomUUID()))
-                }
-                coEvery { arbeidsgiverService.getArbeidsgivere("1") } returns
-                    listOf(Arbeidsgiverinfo("1", null))
-
-                narmestelederArbeidsforholdUpdateService.updateNarmesteledere()
-                database.use {
-                    getNarmesteledereToUpdate(OffsetDateTime.now().minusMonths(1))
-                        .size shouldBeEqualTo 0
-                }
+        runBlocking {
+            narmestelederArbeidsforholdUpdateService.updateNarmesteledere()
+            database.use {
+                getNarmesteledereToUpdate(OffsetDateTime.now().minusMonths(1)).size shouldBeEqualTo
+                    0
             }
         }
-    })
+    }
+}
