@@ -12,7 +12,7 @@ val mockkVersion = "1.13.13"
 val nimbusdsVersion = "9.47"
 val testContainerKafkaVersion = "1.20.4"
 val postgresVersion = "42.7.4"
-val flywayVersion = "11.0.1"
+val flywayVersion = "11.1.0"
 val hikariVersion = "6.2.1"
 val testContainerVersion = "1.20.4"
 val kotlinVersion = "2.1.0"
@@ -20,7 +20,7 @@ val commonsCodecVersion = "1.17.1"
 val ktfmtVersion = "0.44"
 val kafkaVersion = "3.9.0"
 val commonsCompressVersion = "1.27.1"
-val junitJupiterVersion = "5.11.3"
+val junitJupiterVersion = "5.11.4"
 
 plugins {
     id("application")
