@@ -12,11 +12,11 @@ val mockkVersion = "1.13.16"
 val nimbusdsVersion = "10.0.1"
 val testContainerKafkaVersion = "1.20.4"
 val postgresVersion = "42.7.5"
-val flywayVersion = "11.2.0"
+val flywayVersion = "11.3.1"
 val hikariVersion = "6.2.1"
 val testContainerVersion = "1.20.4"
-val kotlinVersion = "2.1.0"
-val commonsCodecVersion = "1.17.2"
+val kotlinVersion = "2.1.10"
+val commonsCodecVersion = "1.18.0"
 val ktfmtVersion = "0.44"
 val kafkaVersion = "3.9.0"
 val commonsCompressVersion = "1.27.1"
@@ -24,9 +24,9 @@ val junitJupiterVersion = "5.11.4"
 
 plugins {
     id("application")
-    kotlin("jvm") version "2.1.0"
+    kotlin("jvm") version "2.1.10"
     id("com.diffplug.spotless") version "7.0.2"
-    id("com.gradleup.shadow") version "8.3.5"
+    id("com.gradleup.shadow") version "8.3.6"
 }
 
 application {
