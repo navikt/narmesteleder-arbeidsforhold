@@ -44,6 +44,8 @@ spec:
         - id: loki
         - id: elastic
   resources:
+    limits:
+      memory: 2048Mi
     requests:
       cpu: 90m
       memory: 850Mi
