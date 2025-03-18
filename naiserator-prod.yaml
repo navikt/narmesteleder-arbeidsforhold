@@ -44,11 +44,9 @@ spec:
         - id: loki
         - id: elastic
   resources:
-    limits:
-      memory: 3000Mi
     requests:
-      cpu: 200m
-      memory: 900Mi
+      cpu: 90m
+      memory: 850Mi
   kafka:
     pool: nav-prod
   azure:
