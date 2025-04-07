@@ -9,7 +9,7 @@ import no.nav.syfo.narmesteleder.db.NarmestelederDbModel
 import no.nav.syfo.narmesteleder.db.toNarmestelederDb
 import org.testcontainers.containers.PostgreSQLContainer
 
-class PsqlContainer : PostgreSQLContainer<PsqlContainer>("postgres:12")
+class PsqlContainer : PostgreSQLContainer<PsqlContainer>("postgres:15")
 
 class TestDb {
     companion object {
