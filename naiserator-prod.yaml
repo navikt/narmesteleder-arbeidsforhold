@@ -59,10 +59,11 @@ spec:
       tenant: nav.no
   accessPolicy:
     outbound:
+      rules:
+        - application: logging
+          namespace: nais-system
       external:
         - host: aareg-services.prod-fss-pub.nais.io
-  secureLogs:
-    enabled: true
   env:
     - name: AAREG_URL
       value: https://aareg-services.prod-fss-pub.nais.io
