@@ -5,20 +5,18 @@ val coroutinesVersion = "1.6.4"
 val jacksonVersion = "2.20.2"
 val kluentVersion = "1.73"
 val ktorVersion = "3.4.0"
-val logbackVersion = "1.5.18"
+val logbackVersion = "1.5.26"
 val logstashEncoderVersion = "8.1"
 val prometheusVersion = "0.16.0"
 val mockkVersion = "1.14.4"
 val nimbusdsVersion = "10.3.1"
-val testContainerKafkaVersion = "1.21.3"
+val testcontainerVersion = "2.0.1"
 val postgresVersion = "42.7.7"
 val flywayVersion = "11.10.1"
 val hikariVersion = "6.3.0"
-val testContainerVersion = "1.21.3"
 val kotlinVersion = "2.2.0"
 val ktfmtVersion = "0.44"
 val kafkaVersion = "3.9.1"
-val commonsCompressVersion = "1.27.1"
 val junitJupiterVersion = "5.13.3"
 
 plugins {
@@ -74,14 +72,9 @@ dependencies {
     compileOnly("org.flywaydb:flyway-core:$flywayVersion")
     implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
 
-    implementation("org.apache.kafka:kafka_2.12:$kafkaVersion")
+    implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
 
-    testImplementation("org.testcontainers:postgresql:$testContainerVersion")
-    constraints {
-        implementation("org.apache.commons:commons-compress:$commonsCompressVersion") {
-            because("Due to vulnerabilities, see CVE-2024-26308")
-        }
-    }
+    testImplementation("org.testcontainers:testcontainers-postgresql:$testcontainerVersion")
     testImplementation("org.amshove.kluent:kluent:$kluentVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
@@ -89,7 +82,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusdsVersion")
-    testImplementation("org.testcontainers:kafka:$testContainerKafkaVersion")
+    testImplementation("org.testcontainers:testcontainers-kafka:$testcontainerVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion") {
         exclude(group = "org.eclipse.jetty")
     }
