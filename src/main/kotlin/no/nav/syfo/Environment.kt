@@ -17,6 +17,8 @@ data class Environment(
     val narmestelederTopic: String = "teamsykmelding.syfo-narmesteleder",
     val cluster: String = getEnvVar("NAIS_CLUSTER_NAME")
 ) {
+    val offsetResetPolicy: String = getEnvVar("AUTO_OFFSET_RESET_POLICY", "none")
+
     fun jdbcUrl(): String {
         return "jdbc:postgresql://$dbHost:$dbPort/$dbName"
     }

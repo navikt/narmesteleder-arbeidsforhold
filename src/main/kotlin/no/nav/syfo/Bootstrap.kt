@@ -62,7 +62,7 @@ fun main() {
             KafkaUtils.getAivenKafkaConfig("narmesteleder-leder-consumer")
                 .also {
                     it[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = "100"
-                    it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "none"
+                    it[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = env.offsetResetPolicy
                 }
                 .toConsumerConfig("narmesteleder-arbeidsforhold", JacksonKafkaDeserializer::class),
             StringDeserializer(),
