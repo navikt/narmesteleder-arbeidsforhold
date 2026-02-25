@@ -60,9 +60,9 @@ spec:
         - application: logging
           namespace: nais-system
       external:
-        - host: aareg-services-q1.dev-fss-pub.nais.io
+        - host: aareg-services-q2.dev-fss-pub.nais.io
   env:
     - name: AAREG_URL
-      value: https://aareg-services-q1.dev-fss-pub.nais.io
+      value: https://aareg-services-q2.dev-fss-pub.nais.io
     - name: AAREG_SCOPE
-      value: api://dev-fss.arbeidsforhold.aareg-services-nais-q1/.default
+      value: api://dev-fss.arbeidsforhold.aareg-services-nais/.default
