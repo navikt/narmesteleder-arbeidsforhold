@@ -1,18 +1,15 @@
 package no.nav.syfo
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
-import io.ktor.client.engine.apache.Apache
-import io.ktor.client.engine.apache.ApacheEngineConfig
+import io.ktor.client.engine.apache5.Apache5
+import io.ktor.client.engine.apache5.Apache5EngineConfig
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.network.sockets.SocketTimeoutException
-import io.ktor.serialization.jackson.jackson
+import io.ktor.serialization.jackson3.jackson
 import io.prometheus.client.hotspot.DefaultExports
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -66,17 +63,11 @@ fun main() {
                 }
                 .toConsumerConfig("narmesteleder-arbeidsforhold", JacksonKafkaDeserializer::class),
             StringDeserializer(),
-            JacksonKafkaDeserializer(NarmestelederLeesahKafkaMessage::class)
+            JacksonKafkaDeserializer(NarmestelederLeesahKafkaMessage::class),
         )
 
-    val config: HttpClientConfig<ApacheEngineConfig>.() -> Unit = {
-        install(ContentNegotiation) {
-            jackson {
-                registerModule(JavaTimeModule())
-                configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            }
-        }
+    val config: HttpClientConfig<Apache5EngineConfig>.() -> Unit = {
+        install(ContentNegotiation) { jackson {} }
         HttpResponseValidator {
             handleResponseExceptionWithRequest { exception, _ ->
                 when (exception) {
@@ -108,7 +99,7 @@ fun main() {
             requestTimeoutMillis = 20_000
         }
     }
-    val httpClient = HttpClient(Apache, config)
+    val httpClient = HttpClient(Apache5, config)
 
     val database = Database(env, applicationState)
     val narmesteLederDb = NarmestelederDb(database)
@@ -120,7 +111,7 @@ fun main() {
         ArbeidsgiverService(
             arbeidsforholdClient = arbeidsforholdClient,
             accessTokenClient = accessTokenClient,
-            scope = env.aaregScope
+            scope = env.aaregScope,
         )
 
     val narmestelederKafkaProducer =
@@ -131,9 +122,9 @@ fun main() {
                     .toProducerConfig(
                         "narmesteleder-arbeidsforhold-producer",
                         JacksonKafkaSerializer::class,
-                        StringSerializer::class
+                        StringSerializer::class,
                     )
-            )
+            ),
         )
 
     val narmestelederArbeidsforholdUpdateService =
@@ -141,7 +132,7 @@ fun main() {
             narmestelederDb = narmesteLederDb,
             arbeidsgiverService = arbeidsgiverService,
             narmestelederKafkaProducer = narmestelederKafkaProducer,
-            cluster = env.cluster
+            cluster = env.cluster,
         )
     val narmestelederService =
         NarmestelederService(
@@ -149,7 +140,7 @@ fun main() {
             narmesteLederDb,
             applicationState,
             env.narmestelederLeesahTopic,
-            narmestelederArbeidsforholdUpdateService
+            narmestelederArbeidsforholdUpdateService,
         )
 
     startBackgroundJob(applicationState) { narmestelederService.start() }
@@ -159,7 +150,7 @@ fun main() {
 @OptIn(DelicateCoroutinesApi::class)
 fun startBackgroundJob(
     applicationState: ApplicationState,
-    block: suspend CoroutineScope.() -> Unit
+    block: suspend CoroutineScope.() -> Unit,
 ) {
     GlobalScope.launch(Dispatchers.Unbounded) {
         try {

@@ -17,7 +17,7 @@ class ArbeidsforholdClient(private val httpClient: HttpClient, url: String) {
     suspend fun getArbeidsforhold(
         fnr: String,
         ansettelsesperiodeFom: LocalDate,
-        token: String
+        token: String,
     ): List<Arbeidsforhold> {
         return httpClient
             .get(

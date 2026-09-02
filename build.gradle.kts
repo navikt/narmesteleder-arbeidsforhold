@@ -2,27 +2,27 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.6.4"
-val jacksonVersion = "2.20.2"
+val jacksonVersion = "3.2.2"
 val kluentVersion = "1.73"
-val ktorVersion = "3.4.0"
-val logbackVersion = "1.5.26"
-val logstashEncoderVersion = "8.1"
+val ktorVersion = "3.5.2"
+val logbackVersion = "1.6.3"
+val logstashEncoderVersion = "9.0"
 val prometheusVersion = "0.16.0"
 val mockkVersion = "1.14.4"
 val nimbusdsVersion = "10.3.1"
-val testcontainerVersion = "2.0.3"
+val testcontainerVersion = "2.0.5"
 val postgresVersion = "42.7.7"
-val flywayVersion = "11.10.1"
-val hikariVersion = "6.3.0"
-val kotlinVersion = "2.2.0"
-val ktfmtVersion = "0.44"
-val kafkaVersion = "3.9.1"
-val junitJupiterVersion = "5.13.3"
+val flywayVersion = "13.4.0"
+val hikariVersion = "7.1.0"
+val kotlinVersion = "2.4.10"
+val ktfmtVersion = "0.56"
+val kafkaVersion = "4.3.1"
+val junitJupiterVersion = "6.1.3"
 
 plugins {
     id("application")
-    kotlin("jvm") version "2.2.0"
-    id("com.diffplug.spotless") version "7.0.4"
+    kotlin("jvm") version "2.4.10"
+    id("com.diffplug.spotless") version "8.10.1"
     id("com.gradleup.shadow") version "8.3.8"
 }
 
@@ -40,8 +40,6 @@ repositories {
 
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
-
     implementation("io.prometheus:simpleclient_hotspot:$prometheusVersion")
     implementation("io.prometheus:simpleclient_common:$prometheusVersion")
 
@@ -52,20 +50,17 @@ dependencies {
     implementation("io.ktor:ktor-server-call-id:$ktorVersion")
 
     implementation("io.ktor:ktor-client-core:$ktorVersion")
-    implementation("io.ktor:ktor-client-apache:$ktorVersion")
+    implementation("io.ktor:ktor-client-apache5:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-    implementation("io.ktor:ktor-serialization-jackson:$ktorVersion") {
-        exclude(group = "com.fasterxml.woodstox", module = "woodstox-core")
-    }
+    implementation("io.ktor:ktor-serialization-jackson3:$ktorVersion")
 
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
 
-    implementation("com.fasterxml.jackson.module:jackson-module-jaxb-annotations:$jacksonVersion")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+    implementation("tools.jackson.module:jackson-module-jaxb-annotations:$jacksonVersion")
+    implementation("tools.jackson.module:jackson-module-kotlin:$jacksonVersion")
+    implementation("tools.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion")
 
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")

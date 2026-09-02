@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit
 class ApplicationServer(
     private val applicationServer:
         EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration>,
-    private val applicationState: ApplicationState
+    private val applicationState: ApplicationState,
 ) {
     init {
         Runtime.getRuntime()
@@ -17,7 +17,7 @@ class ApplicationServer(
                     applicationState.alive = false
                     this.applicationServer.stop(
                         TimeUnit.SECONDS.toMillis(30),
-                        TimeUnit.SECONDS.toMillis(30)
+                        TimeUnit.SECONDS.toMillis(30),
                     )
                 }
             )

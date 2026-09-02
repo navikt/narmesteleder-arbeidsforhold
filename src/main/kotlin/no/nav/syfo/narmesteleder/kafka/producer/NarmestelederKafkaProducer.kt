@@ -12,7 +12,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 
 class NarmestelederKafkaProducer(
     private val topic: String,
-    private val kafkaProducer: KafkaProducer<String, NlResponseKafkaMessage>
+    private val kafkaProducer: KafkaProducer<String, NlResponseKafkaMessage>,
 ) {
     fun sendNlAvbrutt(narmestelederDbModel: NarmestelederDbModel) {
         try {
@@ -21,14 +21,14 @@ class NarmestelederKafkaProducer(
                     kafkaMetadata =
                         KafkaMetadata(
                             timestamp = OffsetDateTime.now(ZoneOffset.UTC),
-                            source = "narmesteleder-arbeidsforhold"
+                            source = "narmesteleder-arbeidsforhold",
                         ),
                     nlAvbrutt =
                         NlAvbrutt(
                             orgnummer = narmestelederDbModel.orgnummer,
                             sykmeldtFnr = narmestelederDbModel.brukerFnr,
-                            aktivTom = OffsetDateTime.now(ZoneOffset.UTC)
-                        )
+                            aktivTom = OffsetDateTime.now(ZoneOffset.UTC),
+                        ),
                 )
             kafkaProducer
                 .send(

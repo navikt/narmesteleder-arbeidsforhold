@@ -7,5 +7,5 @@ data class NarmestelederDbModel(
     val narmestelederId: UUID,
     val lastUpdated: OffsetDateTime,
     val brukerFnr: String,
-    val orgnummer: String
+    val orgnummer: String,
 )

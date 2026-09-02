@@ -15,7 +15,7 @@ data class Environment(
     val aaregUrl: String = getEnvVar("AAREG_URL"),
     val aaregScope: String = getEnvVar("AAREG_SCOPE"),
     val narmestelederTopic: String = "teamsykmelding.syfo-narmesteleder",
-    val cluster: String = getEnvVar("NAIS_CLUSTER_NAME")
+    val cluster: String = getEnvVar("NAIS_CLUSTER_NAME"),
 ) {
     val offsetResetPolicy: String = getEnvVar("AUTO_OFFSET_RESET_POLICY", "none")
 
@@ -26,4 +26,5 @@ data class Environment(
 
 fun getEnvVar(varName: String, defaultValue: String? = null) =
     System.getenv(varName)
-        ?: defaultValue ?: throw RuntimeException("Missing required variable \"$varName\"")
+        ?: defaultValue
+        ?: throw RuntimeException("Missing required variable \"$varName\"")

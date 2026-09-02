@@ -43,7 +43,7 @@ class NarmestelederDb(private val database: DatabaseInterface) {
                         4,
                         Timestamp.from(
                             narmesteleder.aktivFom.atStartOfDay().toInstant(ZoneOffset.UTC)
-                        )
+                        ),
                     )
                     preparedStatement.executeUpdate()
                 }
@@ -119,7 +119,7 @@ fun ResultSet.toNarmestelederDb(): List<NarmestelederDbModel> {
                 narmestelederId = UUID.fromString(getString("narmeste_leder_id")),
                 lastUpdated = getTimestamp("last_update").toInstant().atOffset(ZoneOffset.UTC),
                 brukerFnr = getString("bruker_fnr"),
-                orgnummer = getString("orgnummer")
+                orgnummer = getString("orgnummer"),
             )
         )
     }
