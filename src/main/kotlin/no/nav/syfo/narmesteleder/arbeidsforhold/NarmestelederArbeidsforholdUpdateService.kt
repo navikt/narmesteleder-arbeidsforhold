@@ -21,7 +21,7 @@ class NarmestelederArbeidsforholdUpdateService(
     private val narmestelederDb: NarmestelederDb,
     private val arbeidsgiverService: ArbeidsgiverService,
     private val narmestelederKafkaProducer: NarmestelederKafkaProducer,
-    private val cluster: String
+    private val cluster: String,
 ) {
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -81,7 +81,7 @@ class NarmestelederArbeidsforholdUpdateService(
         } catch (e: Exception) {
             log.error(
                 "Noe gikk galt ved henting av arbeidsgivere for narmestelederId ${narmesteleder.narmestelederId}: ${e.message}",
-                e
+                e,
             )
             ERROR_COUNTER.labels("arbeidsforhold").inc()
             throw e

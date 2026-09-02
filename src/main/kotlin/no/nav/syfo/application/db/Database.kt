@@ -16,7 +16,7 @@ class Database(
     private val env: Environment,
     applicationState: ApplicationState,
     retries: Long = 30,
-    sleepTime: Long = 5_000
+    sleepTime: Long = 5_000,
 ) : DatabaseInterface {
     private val dataSource: HikariDataSource
     override val connection: Connection

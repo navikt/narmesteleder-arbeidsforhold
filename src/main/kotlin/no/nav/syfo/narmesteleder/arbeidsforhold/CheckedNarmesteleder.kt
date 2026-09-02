@@ -5,5 +5,5 @@ import no.nav.syfo.narmesteleder.db.NarmestelederDbModel
 data class CheckedNarmesteleder(
     val narmestelederDbModel: NarmestelederDbModel,
     val valid: Boolean,
-    val failed: Boolean
+    val failed: Boolean,
 )

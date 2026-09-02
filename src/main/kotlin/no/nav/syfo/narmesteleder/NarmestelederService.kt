@@ -15,7 +15,7 @@ class NarmestelederService(
     private val narmestelederDb: NarmestelederDb,
     private val applicationState: ApplicationState,
     private val narmestelederLeesahTopic: String,
-    private val narmestelederArbeidsforholdUpdateService: NarmestelederArbeidsforholdUpdateService
+    private val narmestelederArbeidsforholdUpdateService: NarmestelederArbeidsforholdUpdateService,
 ) {
     suspend fun start() {
         log.info("Starting jobs in 60 seconds, to allow pods to terminate before start")
