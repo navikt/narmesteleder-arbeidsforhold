@@ -2,17 +2,17 @@ group = "no.nav.syfo"
 version = "1.0.0"
 
 val coroutinesVersion = "1.6.4"
-val jacksonVersion = "3.2.2"
+val jacksonVersion = "3.2.3"
 val kluentVersion = "1.73"
 val ktorVersion = "3.6.0"
 val logbackVersion = "1.6.3"
 val logstashEncoderVersion = "9.0"
 val prometheusVersion = "0.16.0"
-val mockkVersion = "1.14.4"
-val nimbusdsVersion = "10.3.1"
+val mockkVersion = "1.14.11"
+val nimbusdsVersion = "10.10"
 val testcontainerVersion = "2.0.5"
-val postgresVersion = "42.7.7"
-val flywayVersion = "13.4.0"
+val postgresVersion = "42.7.13"
+val flywayVersion = "13.7.0"
 val hikariVersion = "7.1.0"
 val kotlinVersion = "2.4.10"
 val ktfmtVersion = "0.56"
@@ -21,9 +21,9 @@ val junitJupiterVersion = "6.1.3"
 
 plugins {
     id("application")
-    kotlin("jvm") version "2.4.10"
-    id("com.diffplug.spotless") version "8.10.1"
-    id("com.gradleup.shadow") version "8.3.8"
+    kotlin("jvm") version "2.4.20"
+    id("com.diffplug.spotless") version "8.10.2"
+    id("com.gradleup.shadow") version "9.6.1"
 }
 
 application {
